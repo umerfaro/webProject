@@ -18,8 +18,7 @@ import {
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
 import checkId from "../middlewares/checkId.js";
 
-router
-  .route("/")
+router.route("/")
   .get(fetchProducts)
   .post(authenticate, authorizeAdmin, formidable(), addProduct);
 
