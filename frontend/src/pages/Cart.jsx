@@ -23,92 +23,92 @@ const Cart = () => {
   };
 
   return (
-    <>
-      <div className="container flex justify-around items-start flex wrap mx-auto mt-8">
-        {cartItems.length === 0 ? (
-          <div>
-            Your cart is empty <Link to="/shop">Go To Shop</Link>
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-col w-[80%]">
-              <h1 className="text-2xl font-semibold mb-4">Shopping Cart</h1>
-
-              {cartItems.map((item) => (
-                <div key={item._id} className="flex items-enter mb-[1rem] pb-2">
-                  <div className="w-[5rem] h-[5rem]">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  </div>
-
-                  <div className="flex-1 ml-4">
-                    <Link to={`/product/${item._id}`} className="text-pink-500">
-                      {item.name}
-                    </Link>
-
-                    <div className="mt-2 text-white">{item.brand}</div>
-                    <div className="mt-2 text-white font-bold">
-                      $ {item.price}
-                    </div>
-                  </div>
-
-                  <div className="w-24">
-                    <select
-                      className="w-full p-1 border rounded text-black"
-                      value={item.qty}
-                      onChange={(e) =>
-                        addToCartHandler(item, Number(e.target.value))
-                      }
-                    >
-                      {[...Array(item.countInStock).keys()].map((x) => (
-                        <option key={x + 1} value={x + 1}>
-                          {x + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <button
-                      className="text-red-500 mr-[5rem]"
-                      onClick={() => removeFromCartHandler(item._id)}
-                    >
-                      <FaTrash className="ml-[1rem] mt-[.5rem]" />
-                    </button>
-                  </div>
+    <div className="container mx-auto mt-8 p-4">
+      {cartItems.length === 0 ? (
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">Your cart is empty!</h2>
+          <p className="mt-4 text-lg">Looks like you haven't added anything yet.</p>
+          <Link to="/shop" className="text-pink-500 text-lg mt-4 inline-block">
+            Go to Shop
+          </Link>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Cart Items */}
+          <div className="flex-1">
+            <h1 className="text-2xl font-semibold mb-6">Shopping Cart</h1>
+            {cartItems.map((item) => (
+              <div key={item._id} className="flex items-center mb-6 p-4 border-b">
+                {/* Product Image */}
+                <div className="w-24 h-24">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover rounded"
+                  />
                 </div>
-              ))}
 
-              <div className="mt-8 w-[40rem]">
-                <div className="p-4 rounded-lg">
-                  <h2 className="text-xl font-semibold mb-2">
-                    Items ({cartItems.reduce((acc, item) => acc + item.qty, 0)})
-                  </h2>
+                {/* Product Info */}
+                <div className="flex-1 ml-4">
+                  <Link to={`/product/${item._id}`} className="text-pink-500 text-lg font-semibold">
+                    {item.name}
+                  </Link>
+                  <div className="text-gray-600 mt-2">{item.brand}</div>
+                  <div className="text-lg font-bold mt-2">${item.price}</div>
+                </div>
 
-                  <div className="text-2xl font-bold">
-                    ${" "}
-                    {cartItems
-                      .reduce((acc, item) => acc + item.qty * item.price, 0)
-                      .toFixed(2)}
-                  </div>
-
-                  <button
-                    className="bg-pink-500 mt-4 py-2 px-4 rounded-full text-lg w-full"
-                    disabled={cartItems.length === 0}
-                    onClick={checkoutHandler}
+                {/* Quantity Selector */}
+                <div className="w-28">
+                  <select
+                    className="w-full p-2 border rounded text-black"
+                    value={item.qty}
+                    onChange={(e) =>
+                      addToCartHandler(item, Number(e.target.value))
+                    }
                   >
-                    Proceed To Checkout
+                    {[...Array(item.countInStock).keys()].map((x) => (
+                      <option key={x + 1} value={x + 1}>
+                        {x + 1}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Remove from Cart Button */}
+                <div className="ml-4">
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => removeFromCartHandler(item._id)}
+                  >
+                    <FaTrash className="text-lg" />
                   </button>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Cart Summary */}
+          <div className="w-full lg:w-[30rem] p-4 bg-black-100 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">
+              Cart Summary ({cartItems.reduce((acc, item) => acc + item.qty, 0)})
+            </h2>
+            <div className="text-2xl font-bold mb-4">
+              ${cartItems
+                .reduce((acc, item) => acc + item.qty * item.price, 0)
+                .toFixed(2)}
             </div>
-          </>
-        )}
-      </div>
-    </>
+
+            <button
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-full text-lg"
+              disabled={cartItems.length === 0}
+              onClick={checkoutHandler}
+            >
+              Proceed to Checkout
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

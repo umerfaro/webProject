@@ -12,7 +12,7 @@ import Modal from "../../components/Modal";
 import AdminMenu from "./AdminMenu";
 
 const CategoryList = () => {
-  const { data: categories } = useFetchCategoriesQuery();
+  const { data: categories, refetch } = useFetchCategoriesQuery();
   const [name, setName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [updatingName, setUpdatingName] = useState("");
@@ -37,6 +37,9 @@ const CategoryList = () => {
       } else {
         setName("");
         toast.success(`${result.name} is created.`);
+        
+        // Force a refetch of categories to show the newly created category
+        refetch();
       }
     } catch (error) {
       console.error(error);
@@ -67,6 +70,9 @@ const CategoryList = () => {
         setSelectedCategory(null);
         setUpdatingName("");
         setModalVisible(false);
+
+        // Refetch categories after update
+        refetch();
       }
     } catch (error) {
       console.error(error);
@@ -83,10 +89,13 @@ const CategoryList = () => {
         toast.success(`${result.name} is deleted.`);
         setSelectedCategory(null);
         setModalVisible(false);
+
+        // Refetch categories after delete
+        refetch();
       }
     } catch (error) {
       console.error(error);
-      toast.error("Category delection failed. Tray again.");
+      toast.error("Category deletion failed. Try again.");
     }
   };
 
@@ -109,11 +118,9 @@ const CategoryList = () => {
               <button
                 className="bg-white border border-pink-500 text-pink-500 py-2 px-4 rounded-lg m-3 hover:bg-pink-500 hover:text-white focus:outline-none foucs:ring-2 focus:ring-pink-500 focus:ring-opacity-50"
                 onClick={() => {
-                  {
-                    setModalVisible(true);
-                    setSelectedCategory(category);
-                    setUpdatingName(category.name);
-                  }
+                  setModalVisible(true);
+                  setSelectedCategory(category);
+                  setUpdatingName(category.name);
                 }}
               >
                 {category.name}
