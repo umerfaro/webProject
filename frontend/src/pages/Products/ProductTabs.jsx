@@ -16,7 +16,6 @@ const ProductTabs = ({
   product,
 }) => {
   const { data, isLoading } = useGetTopProductsQuery();
-
   const [activeTab, setActiveTab] = useState(1);
 
   if (isLoading) {
@@ -27,29 +26,26 @@ const ProductTabs = ({
     setActiveTab(tabNumber);
   };
 
+  // Check if the user is a seller or admin
+  const isUserSellerOrAdmin = userInfo?.isSeller || userInfo?.isAdmin;
+
   return (
     <div className="flex flex-col md:flex-row">
       <section className="mr-[5rem]">
         <div
-          className={`flex-1 p-4 cursor-pointer text-lg ${
-            activeTab === 1 ? "font-bold" : ""
-          }`}
+          className={`flex-1 p-4 cursor-pointer text-lg ${activeTab === 1 ? "font-bold" : ""}`}
           onClick={() => handleTabClick(1)}
         >
-          Write Your Review
+          {!isUserSellerOrAdmin && "Write Your Review"} {/* Only show if not seller or admin */}
         </div>
         <div
-          className={`flex-1 p-4 cursor-pointer text-lg ${
-            activeTab === 2 ? "font-bold" : ""
-          }`}
+          className={`flex-1 p-4 cursor-pointer text-lg ${activeTab === 2 ? "font-bold" : ""}`}
           onClick={() => handleTabClick(2)}
         >
           All Reviews
         </div>
         <div
-          className={`flex-1 p-4 cursor-pointer text-lg ${
-            activeTab === 3 ? "font-bold" : ""
-          }`}
+          className={`flex-1 p-4 cursor-pointer text-lg ${activeTab === 3 ? "font-bold" : ""}`}
           onClick={() => handleTabClick(3)}
         >
           Related Products
@@ -58,7 +54,7 @@ const ProductTabs = ({
 
       {/* Second Part */}
       <section>
-        {activeTab === 1 && (
+        {activeTab === 1 && !isUserSellerOrAdmin && (  // Disable review section for sellers/admins
           <div className="mt-4">
             {userInfo ? (
               <form onSubmit={submitHandler}>
