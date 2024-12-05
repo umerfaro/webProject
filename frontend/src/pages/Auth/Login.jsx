@@ -6,9 +6,13 @@ import { useLoginMutation } from "../../redux/api/usersApiSlice";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
 
+// Importing the eye icons for password visibility toggle
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -23,7 +27,9 @@ const Login = () => {
 
   useEffect(() => {
     if (userInfo) {
+      console.log(userInfo,'data');
       navigate(redirect);
+
     }
   }, [navigate, redirect, userInfo]);
 
@@ -31,7 +37,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await login({ email, password }).unwrap();
-      console.log(res);
+      console.log(res,'res');
       dispatch(setCredentials({ ...res }));
       navigate(redirect);
     } catch (err) {
@@ -40,59 +46,72 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <section className="pl-[10rem] flex flex-wrap">
-        <div className="mr-[4rem] mt-[5rem]">
-          <h1 className="text-2xl font-semibold mb-4">Sign In</h1>
+    <div
+      className="flex items-center justify-center min-h-screen bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1493633619019-d32a7bf99fbc?crop=entropy&cs=tinysrgb&fit=max&ixid=M3wzNjk1NXwwfDF8c2VhcmNofDE2fHxibG9vZC5waG98ZW58MHx8fHwxNjk0MzkxNjM1&ixlib=rb-1.2.1&q=80&w=1080')",
+      }}
+    >
+      <section className="w-full max-w-md bg-black bg-opacity-60 p-8 rounded-lg shadow-lg">
+        <h1 className="text-2xl font-semibold mb-6 text-center text-white">
+          Sign In
+        </h1>
 
-          <form onSubmit={submitHandler} className="container w-[40rem]">
-            <div className="my-[2rem]">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-white"
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                className="mt-1 p-2 border rounded w-full"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-white"
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                className="mt-1 p-2 border rounded w-full"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <button
-              disabled={isLoading}
-              type="submit"
-              className="bg-pink-500 text-white px-4 py-2 rounded cursor-pointer my-[1rem]"
+        <form onSubmit={submitHandler}>
+          <div className="my-4">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-white"
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              className="mt-2 p-2 border border-gray-300 rounded w-full"
+              placeholder="Enter email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="my-4 relative">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-white"
+            >
+              Password
+            </label>
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              className="mt-2 p-2 border border-gray-300 rounded w-full"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute top-8 right-3 text-gray-300"
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
+          </div>
 
-            {isLoading && <Loader />}
-          </form>
+          <button
+            disabled={isLoading}
+            type="submit"
+            className="bg-pink-500 text-white px-4 py-2 rounded w-full my-4"
+          >
+            {isLoading ? "Signing In..." : "Sign In"}
+          </button>
 
-          <div className="mt-4">
-            <p className="text-white">
+          {isLoading && <Loader />}
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-300">
               New Customer?{" "}
               <Link
                 to={redirect ? `/register?redirect=${redirect}` : "/register"}
@@ -102,12 +121,7 @@ const Login = () => {
               </Link>
             </p>
           </div>
-        </div>
-        <img
-          src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1964&q=80"
-          alt=""
-          className="h-[65rem] w-[59%] xl:block md:hidden sm:hidden rounded-lg"
-        />
+        </form>
       </section>
     </div>
   );

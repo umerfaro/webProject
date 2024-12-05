@@ -63,6 +63,9 @@ const ProductDetails = () => {
     navigate("/cart");
   };
 
+  // Check if the user is a seller or an admin
+  const isUserSellerOrAdmin = userInfo?.isSeller || userInfo?.isAdmin;
+
   return (
     <>
       <div className="container mx-auto px-6 lg:px-12 py-6">
@@ -79,8 +82,7 @@ const ProductDetails = () => {
           <Message variant="danger">
             {error?.data?.message || error.message}
           </Message>
-        ) : 
-         (
+        ) : (
           <div className="flex flex-wrap items-center justify-between">
             {/* Product Image */}
             <div className="w-full lg:w-1/2 xl:w-2/5 mb-8 lg:mb-0">
@@ -148,28 +150,32 @@ const ProductDetails = () => {
               {/* Add to Cart Button */}
               <button
                 onClick={addToCartHandler}
-                disabled={product.countInStock === 0}
+                disabled={product.countInStock === 0 || isUserSellerOrAdmin}
                 className={`w-full bg-pink-600 text-white py-3 px-6 rounded-lg mt-4 transition-all hover:bg-pink-700 disabled:bg-gray-400`}
               >
-                {product.countInStock === 0 ? "Out of Stock" : "Add To Cart"}
+                {product.countInStock === 0
+                  ? "Out of Stock"
+                  : isUserSellerOrAdmin
+                  ? "You cannot add to cart as a seller or admin"
+                  : "Add To Cart"}
               </button>
             </div>
           </div>
         )}
-          {/* Reviews and Product Tabs */}
-          <div className="mt-12">
-            <ProductTabs
-              loadingProductReview={loadingProductReview}
-              userInfo={userInfo}
-              submitHandler={submitHandler}
-              rating={rating}
-              setRating={setRating}
-              comment={comment}
-              setComment={setComment}
-              product={product}
-            />
-          </div>
-      
+
+        {/* Reviews and Product Tabs */}
+        <div className="mt-12">
+          <ProductTabs
+            loadingProductReview={loadingProductReview}
+            userInfo={userInfo}
+            submitHandler={submitHandler}
+            rating={rating}
+            setRating={setRating}
+            comment={comment}
+            setComment={setComment}
+            product={product}
+          />
+        </div>
       </div>
     </>
   );

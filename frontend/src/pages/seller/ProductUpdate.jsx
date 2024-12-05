@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminMenu from "./AdminMenu";
+import AdminMenu from "../Admin/AdminMenu";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   useUpdateProductMutation,

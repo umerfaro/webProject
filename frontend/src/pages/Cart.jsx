@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaTrash } from "react-icons/fa";
 import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
+import { useEffect } from "react";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -21,6 +22,19 @@ const Cart = () => {
   const checkoutHandler = () => {
     navigate("/login?redirect=/shipping");
   };
+
+ //getting userInfo from localstorage
+
+ useEffect(() => {
+  const userInfo = localStorage.getItem("userInfo")
+  // if is admin or seller redirect to dashboard
+  if(userInfo && JSON.parse(userInfo).isAdmin || JSON.parse(userInfo).isSeller){
+    navigate('/')
+  }
+
+
+}
+, [])
 
   return (
     <div className="container mx-auto mt-8 p-4">

@@ -4,34 +4,54 @@ import bcrypt from "bcryptjs";
 import createToken from "../utils/createToken.js";
 
 const createUser = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;  // Now expect role in the request body
 
   if (!username || !email || !password) {
     throw new Error("Please fill all the inputs.");
   }
 
+  // Check if the user already exists
   const userExists = await User.findOne({ email });
-  if (userExists) res.status(400).send("User already exists");
+  if (userExists) {
+    return res.status(400).send("User already exists");
+  }
 
+  // Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const newUser = new User({ username, email, password: hashedPassword });
+
+  // Set the user's role
+  const isSeller = role === 'seller';  // If role is 'seller', set isSeller to true
+
+  // Create the new user
+  const newUser = new User({
+    username,
+    email,
+    password: hashedPassword,
+    isSeller,  // Set isSeller field based on the role
+  });
 
   try {
+    // Save user to database
     await newUser.save();
+
+    // Create JWT token
     createToken(res, newUser._id);
 
+    // Send response
     res.status(201).json({
       _id: newUser._id,
       username: newUser.username,
       email: newUser.email,
       isAdmin: newUser.isAdmin,
+      isSeller: newUser.isSeller,  // Return isSeller in the response
     });
   } catch (error) {
     res.status(400);
     throw new Error("Invalid user data");
   }
 });
+
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -55,6 +75,7 @@ const loginUser = asyncHandler(async (req, res) => {
         username: existingUser.username,
         email: existingUser.email,
         isAdmin: existingUser.isAdmin,
+        isSeller: existingUser.isSeller,
       });
       return;
     }
@@ -83,6 +104,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+
     });
   } else {
     res.status(404);
@@ -110,6 +132,7 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
       username: updatedUser.username,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
+      isSeller: updatedUser.isSeller,
     });
   } else {
     res.status(404);
@@ -152,6 +175,7 @@ const updateUserById = asyncHandler(async (req, res) => {
     user.username = req.body.username || user.username;
     user.email = req.body.email || user.email;
     user.isAdmin = Boolean(req.body.isAdmin);
+    user.isSeller = Boolean(req.body.isSeller);
 
     const updatedUser = await user.save();
 
@@ -160,6 +184,7 @@ const updateUserById = asyncHandler(async (req, res) => {
       username: updatedUser.username,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
+      isSeller: updatedUser.isSeller,
     });
   } else {
     res.status(404);

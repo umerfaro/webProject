@@ -76,6 +76,7 @@ const UserList = () => {
                 <th className="px-4 py-2 text-left">NAME</th>
                 <th className="px-4 py-2 text-left">EMAIL</th>
                 <th className="px-4 py-2 text-left">ADMIN</th>
+                <th className="px-4 py-2 text-left">SELLER</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
@@ -143,6 +144,13 @@ const UserList = () => {
                   </td>
                   <td className="px-4 py-2">
                     {user.isAdmin ? (
+                      <FaCheck style={{ color: "green" }} />
+                    ) : (
+                      <FaTimes style={{ color: "red" }} />
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
+                    {user.isSeller ? (
                       <FaCheck style={{ color: "green" }} />
                     ) : (
                       <FaTimes style={{ color: "red" }} />

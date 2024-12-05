@@ -16,6 +16,12 @@ const ProductCard = ({ p }) => {
     });
   };
 
+  // Retrieve userInfo from localStorage or Redux
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+  // Check if the user is a seller or admin
+  const isUserSellerOrAdmin = userInfo?.isSeller || userInfo?.isAdmin;
+
   return (
     <div className="max-w-sm relative bg-white rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
       {/* Product Image Section */}
@@ -75,12 +81,15 @@ const ProductCard = ({ p }) => {
             </svg>
           </Link>
 
-          <button
-            className="p-2 rounded-full hover:bg-pink-100 dark:hover:bg-pink-700"
-            onClick={() => addToCartHandler(p, 1)}
-          >
-            <AiOutlineShoppingCart size={25} />
-          </button>
+          {/* Conditionally render Add to Cart button */}
+          {!isUserSellerOrAdmin && (
+            <button
+              className="p-2 rounded-full hover:bg-pink-100 dark:hover:bg-pink-700"
+              onClick={() => addToCartHandler(p, 1)}
+            >
+              <AiOutlineShoppingCart size={25} />
+            </button>
+          )}
         </section>
       </div>
     </div>
