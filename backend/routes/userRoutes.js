@@ -1,3 +1,4 @@
+// routes/userRoutes.js
 import express from "express";
 import {
   createUser,
@@ -9,6 +10,7 @@ import {
   deleteUserById,
   getUserById,
   updateUserById,
+  googleLogin, // Import the new controller
 } from "../controllers/userController.js";
 
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
@@ -22,6 +24,9 @@ router
 
 router.post("/auth", loginUser);
 router.post("/logout", logoutCurrentUser);
+
+// New Google Auth Route
+router.post("/auth/google", googleLogin);
 
 router
   .route("/profile")

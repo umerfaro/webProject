@@ -2,12 +2,17 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../../components/Loader";
-import { useLoginMutation } from "../../redux/api/usersApiSlice";
+import { useLoginMutation,
+  useGoogleLoginMutation 
+ } from "../../redux/api/usersApiSlice";
 import { setCredentials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
 
 // Importing the eye icons for password visibility toggle
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+// Import GoogleLogin component
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +23,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [login, { isLoading }] = useLoginMutation();
+  const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
 
@@ -27,9 +33,8 @@ const Login = () => {
 
   useEffect(() => {
     if (userInfo) {
-      console.log(userInfo,'data');
+      console.log(userInfo, "data");
       navigate(redirect);
-
     }
   }, [navigate, redirect, userInfo]);
 
@@ -37,12 +42,32 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await login({ email, password }).unwrap();
-      console.log(res,'res');
+      console.log(res, "res");
       dispatch(setCredentials({ ...res }));
       navigate(redirect);
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
+  };
+
+  // Handler for Google Sign-In success
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const { credential } = credentialResponse;
+      // Send the Google ID token to your backend
+      const res = await googleLogin(credential).unwrap();
+      console.log(res, "Google Login Response");
+      dispatch(setCredentials({ ...res }));
+      navigate(redirect);
+    } catch (err) {
+      toast.error(err?.data?.message || "Google Sign-In failed");
+    }
+  };
+
+  // Handler for Google Sign-In failure
+  const handleGoogleFailure = (error) => {
+    console.error("Google Sign-In Error:", error);
+    toast.error("Google Sign-In was unsuccessful. Please try again.");
   };
 
   return (
@@ -73,6 +98,7 @@ const Login = () => {
               placeholder="Enter email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
@@ -90,25 +116,40 @@ const Login = () => {
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute top-8 right-3 text-gray-300"
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
 
           <button
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
             type="submit"
-            className="bg-pink-500 text-white px-4 py-2 rounded w-full my-4"
+            className="bg-pink-500 text-white px-4 py-2 rounded w-full my-4 hover:bg-pink-600 transition-colors"
           >
             {isLoading ? "Signing In..." : "Sign In"}
           </button>
 
           {isLoading && <Loader />}
+
+          <div className="my-4 flex items-center">
+            <hr className="flex-grow border-gray-300" />
+            <span className="mx-2 text-gray-300">OR</span>
+            <hr className="flex-grow border-gray-300" />
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleFailure}
+            />
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-gray-300">
