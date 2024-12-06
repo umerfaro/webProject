@@ -2,8 +2,11 @@ import { Link } from "react-router-dom";
 import moment from "moment";
 import { useAllProductsQuery } from "../../redux/api/productApiSlice";
 import AdminMenu from "./AdminMenu";
+import { useSelector } from "react-redux"; // For accessing the user state
 
 const AllProducts = () => {
+  const { userInfo } = useSelector((state) => state.auth); // Assuming user info is stored here
+
   const { data: products, isLoading, isError } = useAllProductsQuery();
 
   if (isLoading) {
@@ -14,16 +17,22 @@ const AllProducts = () => {
     return <div>Error loading products</div>;
   }
 
+  // Filter products based on the user's role
+  const visibleProducts = userInfo?.isAdmin
+    ? products // Admin sees all products
+    : products.filter((product) => product.uploadedBy === userInfo._id); // Seller sees only their products
+
   return (
     <>
       <div className="container mx-[9rem]">
-        <div className="flex flex-col  md:flex-row">
+        <div className="flex flex-col md:flex-row">
           <div className="p-3">
             <div className="ml-[2rem] text-xl font-bold h-12">
-              All Products ({products.length})
+              {userInfo?.isAdmin ? "All Products" : "My Products"} (
+              {visibleProducts.length})
             </div>
             <div className="flex flex-wrap justify-around items-center">
-              {products.map((product) => (
+              {visibleProducts.map((product) => (
                 <Link
                   key={product._id}
                   to={`/admin/product/update/${product._id}`}

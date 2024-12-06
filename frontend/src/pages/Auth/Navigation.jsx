@@ -72,21 +72,27 @@ const Navigation = () => {
           <span className="hidden nav-item-name mt-[3rem]">SHOP</span>
         </Link>
 
-        <Link to="/cart" className="flex relative">
-          <div className="flex items-center transition-transform transform hover:translate-x-2">
-            <AiOutlineShoppingCart className="mt-[3rem] mr-2" size={26} />
-            <span className="hidden nav-item-name mt-[3rem]">Cart</span>
-          </div>
 
-          {cartItems.length > 0 && (
-            <div className="absolute top-9">
-              <span className="px-1 py-0 text-sm text-white bg-pink-500 rounded-full">
-                {cartItems.reduce((a, c) => a + c.qty, 0)}
-              </span>
+       
+        {/* Cart Icon - Only show if the user is not both Admin and Seller */}
+        {(isUser) && (
+          <Link to="/cart" className="flex relative">
+            <div className="flex items-center transition-transform transform hover:translate-x-2">
+              <AiOutlineShoppingCart className="mt-[3rem] mr-2" size={26} />
+              <span className="hidden nav-item-name mt-[3rem]">Cart</span>
             </div>
-          )}
-        </Link>
 
+            {cartItems.length > 0 && (
+              <div className="absolute top-9">
+                <span className="px-1 py-0 text-sm text-white bg-pink-500 rounded-full">
+                  {cartItems.reduce((a, c) => a + c.qty, 0)}
+                </span>
+              </div>
+            )}
+          </Link>
+        )}
+
+      
         <Link to="/favorite" className="flex relative">
           <div className="flex justify-center items-center transition-transform transform hover:translate-x-2">
             <FaHeart className="mt-[3rem] mr-2" size={20} />
@@ -132,7 +138,7 @@ const Navigation = () => {
         {dropdownOpen && userInfo && (
           <ul
             className={`absolute right-0 mt-2 mr-14 space-y-2 bg-white text-gray-600 ${
-              userInfo?.isSeller ? "-top-80" : "-top-40"
+              userInfo?.isSeller ? "-top-80" : "-top-48"
             } rounded shadow-lg`}
           >
             {/* Seller Links */}
@@ -184,6 +190,16 @@ const Navigation = () => {
                     Users
                   </Link>
                 </li>
+
+                <li>
+                  <Link
+                    to="/admin/allproductslist"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    All Products
+                  </Link>
+                </li>
+
               </>
             )}
 
@@ -192,7 +208,7 @@ const Navigation = () => {
               <>
                 <li>
                   <Link
-                   to="/admin/orderlist" // Ensure this route exists in your application
+                   to="/order" // Ensure this route exists in your application
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
                     Orders

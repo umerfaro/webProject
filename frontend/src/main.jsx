@@ -35,6 +35,7 @@ import Order from "./pages/Orders/Order.jsx";
 import OrderList from "./pages/Admin_Seller/SellerOrderList.jsx";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import AdminDashboard from "./pages/Admin_Seller/SellerDashboard.jsx";
+import OrderHistoryPage from "./pages/Orders/OrderHistoryPage.jsx";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -59,6 +60,7 @@ const router = createBrowserRouter(
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/placeorder" element={<PlaceOrder />} />
         <Route path="/order/:id" element={<Order />} />
+        <Route path="/order" element={<OrderHistoryPage />} />
       </Route>
 
       <Route path="/admin" element={<AdminRoute />}>

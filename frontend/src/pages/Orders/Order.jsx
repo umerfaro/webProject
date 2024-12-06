@@ -114,6 +114,7 @@ const Order = () => {
                   <tr>
                     <th className="p-2 text-left">Image</th>
                     <th className="p-2 text-left">Product</th>
+                   
                     <th className="p-2 text-center">Quantity</th>
                     <th className="p-2 text-center">Unit Price</th>
                     <th className="p-2 text-center">Total</th>
@@ -134,6 +135,7 @@ const Order = () => {
                           {item.name}
                         </Link>
                       </td>
+                    
                       <td className="p-2 text-center">{item.qty}</td>
                       <td className="p-2 text-center">${item.price.toFixed(2)}</td>
                       <td className="p-2 text-center">${(item.qty * item.price).toFixed(2)}</td>
@@ -172,12 +174,12 @@ const Order = () => {
             {order.paymentMethod}
           </p>
           {order.isPaid ? (
-            <Message variant="succcess">Paid on {new Date(order.paidAt).toLocaleDateString()}</Message>
+            <Message variant="success">Paid on {new Date(order.paidAt).toLocaleDateString()}</Message>
           ) : (
             <Message variant="error">Not Paid</Message>
           )}
-        
         </div>
+
 
         {/* Order Summary */}
         <div className="border border-gray-300 p-4 rounded-lg bg-black">
