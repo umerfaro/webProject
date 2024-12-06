@@ -1,3 +1,4 @@
+// models/userModel.js
 import mongoose from "mongoose";
 
 const userSchema = mongoose.Schema(
@@ -6,32 +7,42 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
     },
-
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
     },
-
     isAdmin: {
       type: Boolean,
       required: true,
       default: false,
     },
-
     isSeller: {
       type: Boolean,
       required: true,
       default: false,
     },
-
+    googleId: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true, // Allows multiple docs with null googleId
+    },
+    avatar: {
+      type: String,
+      required: false,
+    },
+    // Add other fields as necessary
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const User = mongoose.model("User", userSchema);

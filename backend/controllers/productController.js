@@ -21,14 +21,25 @@ const addProduct = asyncHandler(async (req, res) => {
         return res.json({ error: "Quantity is required" });
     }
 
-    const product = new Product({ ...req.fields });
+    // Set the uploader's ID from the authenticated user
+    const uploadedBy = req.user._id;
+    // Optionally, set the uploader's name
+    // const uploadedByName = req.user.username; // Ensure your User model has a 'username' field
+
+    const product = new Product({
+      ...req.fields,
+      uploadedBy,
+      // uploadedByName, // Uncomment if using the uploadedByName field
+    });
+
     await product.save();
     res.json(product);
   } catch (error) {
     console.error(error);
-    res.status(400).json(error.message);
+    res.status(400).json({ error: error.message });
   }
 });
+
 
 const updateProductDetails = asyncHandler(async (req, res) => {
   try {
@@ -50,20 +61,33 @@ const updateProductDetails = asyncHandler(async (req, res) => {
         return res.json({ error: "Quantity is required" });
     }
 
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { ...req.fields },
-      { new: true }
-    );
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Update product fields
+    product.name = name;
+    product.description = description;
+    product.price = price;
+    product.category = category;
+    product.quantity = quantity;
+    product.brand = brand;
+
+    // Optionally, track who updated the product
+    // product.updatedBy = req.user._id;
+    // product.updatedByName = req.user.username;
 
     await product.save();
 
     res.json(product);
   } catch (error) {
     console.error(error);
-    res.status(400).json(error.message);
+    res.status(400).json({ error: error.message });
   }
 });
+
 
 const removeProduct = asyncHandler(async (req, res) => {
   try {
@@ -89,7 +113,10 @@ const fetchProducts = asyncHandler(async (req, res) => {
       : {};
 
     const count = await Product.countDocuments({ ...keyword });
-    const products = await Product.find({ ...keyword }).limit(pageSize);
+    const products = await Product.find({ ...keyword })
+      .populate("category")
+      .populate("uploadedBy", "username") // Populate uploader's username
+      .limit(pageSize);
 
     res.json({
       products,
@@ -102,6 +129,7 @@ const fetchProducts = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 });
+
 
 const fetchProductById = asyncHandler(async (req, res) => {
   try {

@@ -12,15 +12,15 @@ import PrivateRoute from "./components/PrivateRoute";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 
-import AdminRoute from "./pages/Admin/AdminRoute";
+import AdminRoute from "./pages/Admin_Seller/AdminRoute.jsx";
 import Profile from "./pages/User/Profile";
-import UserList from "./pages/Admin/UserList";
+import UserList from "./pages/Admin_Seller/UserList.jsx";
 
-import CategoryList from "./pages/Admin/CategoryList";
+import CategoryList from "./pages/Admin_Seller/SellerCategoryList.jsx";
 
-import ProductList from "./pages/Admin/ProductList";
-import AllProducts from "./pages/Admin/AllProducts";
-import ProductUpdate from "./pages/Admin/ProductUpdate";
+import ProductList from "./pages/Admin_Seller/SellerProductList.jsx";
+import AllProducts from "./pages/Admin_Seller/SellerAllProducts.jsx";
+import ProductUpdate from "./pages/Admin_Seller/SellerProductUpdate.jsx";
 
 import Home from "./pages/Home.jsx";
 import Favorites from "./pages/Products/Favorites.jsx";
@@ -32,9 +32,16 @@ import Shop from "./pages/Shop.jsx";
 import Shipping from "./pages/Orders/Shipping.jsx";
 import PlaceOrder from "./pages/Orders/PlaceOrder.jsx";
 import Order from "./pages/Orders/Order.jsx";
-import OrderList from "./pages/Admin/OrderList.jsx";
+import OrderList from "./pages/Admin_Seller/SellerOrderList.jsx";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
-import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
+import AdminDashboard from "./pages/Admin_Seller/SellerDashboard.jsx";
+import OrderHistoryPage from "./pages/Orders/OrderHistoryPage.jsx";
+
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+// Use environment variables for the Client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "841516082448-05td3fv0mi3suia6dvsiqvp2sp5i6qla.apps.googleusercontent.com"; // Ensure this is the correct Client ID
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -53,6 +60,7 @@ const router = createBrowserRouter(
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/placeorder" element={<PlaceOrder />} />
         <Route path="/order/:id" element={<Order />} />
+        <Route path="/order" element={<OrderHistoryPage />} />
       </Route>
 
       <Route path="/admin" element={<AdminRoute />}>
@@ -71,8 +79,10 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
+  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <PayPalScriptProvider>
       <RouterProvider router={router} />
     </PayPalScriptProvider>
+    </GoogleOAuthProvider>
   </Provider>
 );

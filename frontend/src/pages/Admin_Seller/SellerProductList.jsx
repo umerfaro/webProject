@@ -6,7 +6,7 @@ import {
 } from "../../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
-import AdminMenu from "../Admin/AdminMenu";
+import AdminMenu from "./AdminMenu";
 
 const ProductList = () => {
   const [image, setImage] = useState(""); // Stores the image file

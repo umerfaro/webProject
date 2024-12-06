@@ -7,8 +7,8 @@ import {
 } from "../../redux/api/orderApiSlice";
 
 import { useState, useEffect } from "react";
-import AdminMenu from "../Admin/AdminMenu";
-import OrderList from "../Admin/OrderList";
+import AdminMenu from "./AdminMenu";
+import OrderList from "./SellerOrderList";
 import Loader from "../../components/Loader";
 
 const AdminDashboard = () => {

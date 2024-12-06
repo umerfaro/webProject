@@ -19,6 +19,7 @@ const Shop = () => {
 
   const categoriesQuery = useFetchCategoriesQuery();
   const [priceFilter, setPriceFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const filteredProductsQuery = useGetFilteredProductsQuery({
     checked,
@@ -34,21 +35,24 @@ const Shop = () => {
   useEffect(() => {
     if (!checked.length || !radio.length) {
       if (!filteredProductsQuery.isLoading) {
-        // Filter products based on both checked categories and price filter
+        // Filter products based on checked categories, price filter, and search query
         const filteredProducts = filteredProductsQuery.data.filter(
           (product) => {
-            // Check if the product price includes the entered price filter value
-            return (
+            const matchesPrice =
               product.price.toString().includes(priceFilter) ||
-              product.price === parseInt(priceFilter, 10)
-            );
+              product.price === parseInt(priceFilter, 10);
+
+            const matchesSearch =
+              product.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+            return matchesPrice && matchesSearch;
           }
         );
 
         dispatch(setProducts(filteredProducts));
       }
     }
-  }, [checked, radio, filteredProductsQuery.data, dispatch, priceFilter]);
+  }, [checked, radio, filteredProductsQuery.data, dispatch, priceFilter, searchQuery]);
 
   const handleBrandClick = (brand) => {
     const productsByBrand = filteredProductsQuery.data?.filter(
@@ -76,8 +80,13 @@ const Shop = () => {
   ];
 
   const handlePriceChange = (e) => {
-    // Update the price filter state when the user types in the input filed
+    // Update the price filter state when the user types in the input field
     setPriceFilter(e.target.value);
+  };
+
+  const handleSearchChange = (e) => {
+    // Update the search query state when the user types in the search field
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -92,14 +101,13 @@ const Shop = () => {
             <div className="p-5 w-[15rem]">
               {categories?.map((c) => (
                 <div key={c._id} className="mb-2">
-                  <div className="flex ietms-center mr-4">
+                  <div className="flex items-center mr-4">
                     <input
                       type="checkbox"
                       id="red-checkbox"
                       onChange={(e) => handleCheck(e.target.checked, c._id)}
                       className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     />
-
                     <label
                       htmlFor="pink-checkbox"
                       className="ml-2 text-sm font-medium text-white dark:text-gray-300"
@@ -117,29 +125,26 @@ const Shop = () => {
 
             <div className="p-5">
               {uniqueBrands?.map((brand) => (
-                <>
-                  <div className="flex items-enter mr-4 mb-5">
-                    <input
-                      type="radio"
-                      id={brand}
-                      name="brand"
-                      onChange={() => handleBrandClick(brand)}
-                      className="w-4 h-4 text-pink-400 bg-gray-100 border-gray-300 focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                    />
-
-                    <label
-                      htmlFor="pink-radio"
-                      className="ml-2 text-sm font-medium text-white dark:text-gray-300"
-                    >
-                      {brand}
-                    </label>
-                  </div>
-                </>
+                <div className="flex items-center mr-4 mb-5" key={brand}>
+                  <input
+                    type="radio"
+                    id={brand}
+                    name="brand"
+                    onChange={() => handleBrandClick(brand)}
+                    className="w-4 h-4 text-pink-400 bg-gray-100 border-gray-300 focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label
+                    htmlFor="pink-radio"
+                    className="ml-2 text-sm font-medium text-white dark:text-gray-300"
+                  >
+                    {brand}
+                  </label>
+                </div>
               ))}
             </div>
 
             <h2 className="h4 text-center py-2 bg-black rounded-full mb-2">
-              Filer by Price
+              Filter by Price
             </h2>
 
             <div className="p-5 w-[15rem]">
@@ -148,6 +153,20 @@ const Shop = () => {
                 placeholder="Enter Price"
                 value={priceFilter}
                 onChange={handlePriceChange}
+                className="w-full px-3 py-2 placeholder-gray-400 border rounded-lg focus:outline-none focus:ring focus:border-pink-300"
+              />
+            </div>
+
+            <h2 className="h4 text-center py-2 bg-black rounded-full mb-2">
+              Search by Product Name
+            </h2>
+
+            <div className="p-5 w-[15rem]">
+              <input
+                type="text"
+                placeholder="Search by name"
+                value={searchQuery}
+                onChange={handleSearchChange}
                 className="w-full px-3 py-2 placeholder-gray-400 border rounded-lg focus:outline-none focus:ring focus:border-pink-300"
               />
             </div>
