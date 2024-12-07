@@ -200,13 +200,19 @@ const markOrderAsPaid = async (req, res) => {
 
     if (order) {
       const totalAmount = req.body.totalAmount;
+      const totalQuantity = req.body.totalQuantity;
+
+      // update order status
+      order.isPaid = true;
+      order.paidAt = new Date();
+      await order.save();
 
       // Create the price in Stripe for the payment
       const price = await stripeInstance.prices.create({
-        unit_amount: totalAmount * 100,  // Stripe uses cents (totalAmount * 100 to convert to cents)
+        unit_amount: totalAmount * 100, 
         currency: 'usd',
         product_data: {
-          name: 'Order Payment',  // Name of your product (you can modify this)
+          name: `Order #${req.params.id}`, 
         },
       });
 
@@ -215,17 +221,18 @@ const markOrderAsPaid = async (req, res) => {
         payment_method_types: ['card'],
         line_items: [
           {
-            price: price.id, // Price ID created above
-            quantity: 1,
+            price: price.id,
+            quantity: totalQuantity,
           },
         ],
-        mode: 'payment',  // Indicate this is a one-time payment
-        success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,  // URL after successful payment
-        cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,  // URL if the user cancels the payment
+        mode: 'payment',  
+        success_url: `${process.env.FRONTEND_URL}/order/${req.params.id}`,  
+        cancel_url: `${process.env.FRONTEND_URL}`, 
+        client_reference_id: req.params.id, 
       });
+      // update order details
 
-      // Redirect the user to Stripe Checkout
-      res.status(200).json({ url: session.url });  // Send the Stripe Checkout session URL to the frontend
+      res.status(200).json({ url: session.url });  
     } else {
       res.status(404);
       throw new Error("Order not found");
@@ -235,8 +242,6 @@ const markOrderAsPaid = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
 
 const markOrderAsDelivered = async (req, res) => {
   try {

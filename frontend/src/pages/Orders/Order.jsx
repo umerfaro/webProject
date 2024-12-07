@@ -47,17 +47,21 @@ const Order = () => {
     }));
   
     const totalAmount = order.totalPrice;
-  
+    const totalQuantity = order.orderItems.reduce(
+      (sum, item) => sum + (item.qty || 0),
+      0
+    );
     try {
       // Payment details to send to the backend
       const paymentDetails = {
         status: "completed",
         update_time: new Date().toISOString(),
         payer: {
-          email_address: "payer@example.com", // You can update this to fetch from the actual user
+          email_address: "payer@example.com",
         },
         items: itemsDetails,
         totalAmount,
+        totalQuantity,
       };
   
       // Call the backend to initiate the payment process and get the session URL
@@ -146,10 +150,6 @@ const Order = () => {
             <strong className="text-pink-500">Address:</strong>{" "}
             {order.shippingAddress.address}, {order.shippingAddress.city},{" "}
             {order.shippingAddress.postalCode}, {order.shippingAddress.country}
-          </p>
-          <p className="mb-2">
-            <strong className="text-pink-500">Payment Method:</strong>{" "}
-            {order.paymentMethod}
           </p>
           {order.isPaid ? (
             <Message variant="success">Paid on {new Date(order.paidAt).toLocaleDateString()}</Message>

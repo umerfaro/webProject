@@ -120,10 +120,7 @@ const PlaceOrder = () => {
               </p>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Payment Method</h2>
-              <strong>Method:</strong> {cart.paymentMethod}
-            </div>
+           
           </div>
 
           <button
