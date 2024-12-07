@@ -2,17 +2,17 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import Message from "../../components/Message"; 
+import Message from "../../components/Message";
 import Loader from "../../components/Loader";
 import {
   useDeliverOrderMutation,
   useGetOrderDetailsQuery,
   usePayOrderMutation,
 } from "../../redux/api/orderApiSlice";
-import { useGetUserDetailsQuery } from "../../redux/api/usersApiSlice"; 
+import { useGetUserDetailsQuery } from "../../redux/api/usersApiSlice";
 const Order = () => {
   const { id: orderId } = useParams();
-  const [paymentLoading, setPaymentLoading] = useState(false);  
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const {
     data: order,
@@ -20,20 +20,23 @@ const Order = () => {
     isLoading,
     error,
   } = useGetOrderDetailsQuery(orderId);
-  let totDiscounted = 0;
   console.log(order);
-  
+
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
-  const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
+  const [deliverOrder, { isLoading: loadingDeliver }] =
+    useDeliverOrderMutation();
   const { userInfo } = useSelector((state) => state.auth);
-  const { data: user, isLoading: userLoading, error: userError } = useGetUserDetailsQuery(order?.user);
-  
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useGetUserDetailsQuery(order?.user);
 
   // Determine the user's role
   const isAdmin = userInfo?.isAdmin;
   const isSeller = userInfo?.isSeller;
   const isUser = userInfo && !isAdmin && !isSeller;
-  
+
   const deliverHandler = async () => {
     try {
       await deliverOrder(orderId).unwrap();
@@ -46,15 +49,12 @@ const Order = () => {
 
   const handlePayment = async () => {
     setPaymentLoading(true);
-    const itemsDetails = order.orderItems.map(item => ({
+    const itemsDetails = order.orderItems.map((item) => ({
       name: item.name,
     }));
-  
-    const totalAmount = totDiscounted;
-    const totalQuantity = order.orderItems.reduce(
-      (sum, item) => sum + (item.qty || 0),
-      0
-    );
+
+    const totalAmount = order.totalPrice;
+    const totalQuantity = 1;
     const userEmail = user.email;
     try {
       // Payment details to send to the backend
@@ -68,23 +68,28 @@ const Order = () => {
         totalAmount,
         totalQuantity,
       };
-  
+
       // Call the backend to initiate the payment process and get the session URL
-      const response = await payOrder({ orderId, details: paymentDetails }).unwrap();
-  
+      const response = await payOrder({
+        orderId,
+        details: paymentDetails,
+      }).unwrap();
+
       // If the backend returns a URL, redirect the user to Stripe Checkout
       if (response.url) {
         window.location.href = response.url;
       }
-  
+
       toast.success("Redirecting to payment...");
     } catch (error) {
-      toast.error(error?.data?.message || error?.error || "Payment initiation failed");
+      toast.error(
+        error?.data?.message || error?.error || "Payment initiation failed"
+      );
     } finally {
       setPaymentLoading(false);
     }
   };
-  
+
   return isLoading ? (
     <Loader />
   ) : error ? (
@@ -119,13 +124,28 @@ const Order = () => {
                         />
                       </td>
                       <td className="p-2">
-                        <Link to={`/product/${item.product}`} className="text-white-600 hover:underline">
+                        <Link
+                          to={`/product/${item.product}`}
+                          className="text-white-600 hover:underline"
+                        >
                           {item.name}
                         </Link>
                       </td>
                       <td className="p-2 text-center">{item.qty}</td>
-                      <td className="p-2 text-center">${(item.price - (item.price * item.discount) / 100).toFixed(2)}</td>
-                      <td className="p-2 text-center">${(item.qty * (item.price - (item.price * item.discount) / 100)).toFixed(2)}</td>
+                      <td className="p-2 text-center">
+                        $
+                        {(
+                          item.price -
+                          (item.price * item.discount) / 100
+                        ).toFixed(2)}
+                      </td>
+                      <td className="p-2 text-center">
+                        $
+                        {(
+                          item.qty *
+                          (item.price - (item.price * item.discount) / 100)
+                        ).toFixed(2)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -157,7 +177,9 @@ const Order = () => {
             {order.shippingAddress.postalCode}, {order.shippingAddress.country}
           </p>
           {order.isPaid ? (
-            <Message variant="success">Paid on {new Date(order.paidAt).toLocaleDateString()}</Message>
+            <Message variant="success">
+              Paid on {new Date(order.paidAt).toLocaleDateString()}
+            </Message>
           ) : (
             <Message variant="error">Not Paid</Message>
           )}
@@ -168,7 +190,7 @@ const Order = () => {
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
           <div className="flex justify-between mb-2">
             <span>Items</span>
-            <span>${totDiscounted}</span>
+            <span>${order.itemsPrice.toFixed(2)}</span>
           </div>
           <div className="flex justify-between mb-2">
             <span>Shipping</span>
@@ -180,7 +202,7 @@ const Order = () => {
           </div>
           <div className="flex justify-between mb-4 font-bold">
             <span>Total</span>
-            <span>${(totDiscounted + order.shippingPrice + order.taxPrice).toFixed(2)}</span>
+            <span>${order.totalPrice.toFixed(2)}</span>
           </div>
 
           {/* Payment Section - Visible Only to Regular Users */}

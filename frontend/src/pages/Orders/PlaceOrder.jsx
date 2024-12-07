@@ -100,33 +100,23 @@ const PlaceOrder = () => {
           <div className="flex justify-between flex-wrap p-8 bg-[#181818]">
             <ul className="text-lg">
               <li>
-                <span className="font-semibold mb-4">Items:</span> $
+                <span className="font-semibold mb-4">Items Price:</span> $
                 {totDiscounted}
               </li>
-              <li>
-                <span className="font-semibold mb-4">Shipping:</span> $
-                {cart.shippingPrice}
-              </li>
-              <li>
-                <span className="font-semibold mb-4">Tax:</span> $
-                {cart.taxPrice}
-              </li>
-              <li>
-                <span className="font-semibold mb-4">Total:</span> $
-                {totPrice}
-              </li>
+              <br></br>
+              <div>
+                <h2 className="text-2xl font-semibold mb-4">Shipping</h2>
+                  <p>
+                    <strong>Address:</strong> {cart.shippingAddress.address},{" "}
+                    {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{" "}
+                    {cart.shippingAddress.country}
+                  </p>
+                </div>
             </ul>
 
             {error && <Message variant="danger">{error.data.message}</Message>}
 
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Shipping</h2>
-              <p>
-                <strong>Address:</strong> {cart.shippingAddress.address},{" "}
-                {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{" "}
-                {cart.shippingAddress.country}
-              </p>
-            </div>
+            
 
            
           </div>

@@ -2,13 +2,16 @@ import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 
 // stripe integration
-import stripe from 'stripe';
-const stripeInstance = stripe('sk_test_51QPgYeAwPbCj24ytkM63o2v9mY6hwfYGzeoonI3BiWIAAE8dmzbg4VS4mdeyaDMo0jNgd3GqqDk9X0QjwyAIaveu00UYhC0aiN');
+import stripe from "stripe";
+const stripeInstance = stripe(
+  "sk_test_51QPgYeAwPbCj24ytkM63o2v9mY6hwfYGzeoonI3BiWIAAE8dmzbg4VS4mdeyaDMo0jNgd3GqqDk9X0QjwyAIaveu00UYhC0aiN"
+);
 
 // Utility Function
 function calcPrices(orderItems) {
   const itemsPrice = orderItems.reduce(
-    (acc, item) => acc + item.price * item.qty,
+    (acc, item) =>
+      acc + (item.price - (item.price * item.discount) / 100) * item.qty,
     0
   );
 
@@ -33,6 +36,7 @@ function calcPrices(orderItems) {
 const createOrder = async (req, res) => {
   try {
     const { orderItems, shippingAddress, paymentMethod } = req.body;
+    console.log(orderItems);
 
     if (orderItems && orderItems.length === 0) {
       res.status(400);
@@ -61,7 +65,8 @@ const createOrder = async (req, res) => {
       };
     });
 
-    const { itemsPrice, taxPrice, shippingPrice, totalPrice } = calcPrices(dbOrderItems);
+    const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+      calcPrices(dbOrderItems);
 
     // Fetch uploader from the first item (or any other logic you want to use)
     const uploadedBy = itemsFromDB[0].uploadedBy;
@@ -85,7 +90,6 @@ const createOrder = async (req, res) => {
   }
 };
 
-
 const getAllOrders = async (req, res) => {
   try {
     // If the user is an admin, show all orders
@@ -95,19 +99,20 @@ const getAllOrders = async (req, res) => {
     }
 
     // If the user is a seller, show only their orders
-    const orders = await Order.find({ uploadedBy: req.user._id }).populate("user", "id username");
+    const orders = await Order.find({ uploadedBy: req.user._id }).populate(
+      "user",
+      "id username"
+    );
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-
-
 // const getAllOrders = async (req, res) => {
 //   try {
 //     if (req.user.isSeller) {
-      
+
 //         // If the user is a seller, show only their orders
 //     const orders = await Order.find({ uploadedBy: req.user._id }).populate("user", "id username");
 //     res.json(orders);
@@ -115,9 +120,6 @@ const getAllOrders = async (req, res) => {
 
 //     const orders = await Order.find({}).populate("user", "id username");
 //     res.json(orders);
-
-
-    
 
 //   } catch (error) {
 //     res.status(500).json({ error: error.message });
@@ -185,7 +187,9 @@ const findOrderById = async (req, res) => {
       return;
     }
     if (order.user.toString() !== req.user._id.toString()) {
-      res.status(403).json({ message: "You are not authorized to view this order" });
+      res
+        .status(403)
+        .json({ message: "You are not authorized to view this order" });
       return;
     }
     res.json(order);
@@ -209,30 +213,30 @@ const markOrderAsPaid = async (req, res) => {
 
       // Create the price in Stripe for the payment
       const price = await stripeInstance.prices.create({
-        unit_amount: totalAmount * 100, 
-        currency: 'usd',
+        unit_amount: totalAmount * 100,
+        currency: "usd",
         product_data: {
-          name: `Order #${req.params.id}`, 
+          name: `Order #${req.params.id}`,
         },
       });
 
       // Create a Checkout Session with the price you just created
       const session = await stripeInstance.checkout.sessions.create({
-        payment_method_types: ['card'],
+        payment_method_types: ["card"],
         line_items: [
           {
             price: price.id,
             quantity: totalQuantity,
           },
         ],
-        mode: 'payment',  
-        success_url: `${process.env.FRONTEND_URL}/order/${req.params.id}`,  
-        cancel_url: `${process.env.FRONTEND_URL}`, 
-        client_reference_id: req.params.id, 
+        mode: "payment",
+        success_url: `${process.env.FRONTEND_URL}/order/${req.params.id}`,
+        cancel_url: `${process.env.FRONTEND_URL}`,
+        client_reference_id: req.params.id,
       });
       // update order details
 
-      res.status(200).json({ url: session.url });  
+      res.status(200).json({ url: session.url });
     } else {
       res.status(404);
       throw new Error("Order not found");
