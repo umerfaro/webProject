@@ -1,6 +1,10 @@
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 
+// stripe integration
+import stripe from 'stripe';
+const stripeInstance = stripe('sk_test_51QPgYeAwPbCj24ytkM63o2v9mY6hwfYGzeoonI3BiWIAAE8dmzbg4VS4mdeyaDMo0jNgd3GqqDk9X0QjwyAIaveu00UYhC0aiN');
+
 // Utility Function
 function calcPrices(orderItems) {
   const itemsPrice = orderItems.reduce(
@@ -195,25 +199,44 @@ const markOrderAsPaid = async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
-      order.isPaid = true;
-      order.paidAt = Date.now();
-      order.paymentResult = {
-        id: req.body.id,
-        status: req.body.status,
-        update_time: req.body.update_time,
-        email_address: req.body.payer.email_address,
-      };
+      const totalAmount = req.body.totalAmount;
 
-      const updateOrder = await order.save();
-      res.status(200).json(updateOrder);
+      // Create the price in Stripe for the payment
+      const price = await stripeInstance.prices.create({
+        unit_amount: totalAmount * 100,  // Stripe uses cents (totalAmount * 100 to convert to cents)
+        currency: 'usd',
+        product_data: {
+          name: 'Order Payment',  // Name of your product (you can modify this)
+        },
+      });
+
+      // Create a Checkout Session with the price you just created
+      const session = await stripeInstance.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: price.id, // Price ID created above
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',  // Indicate this is a one-time payment
+        success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,  // URL after successful payment
+        cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,  // URL if the user cancels the payment
+      });
+
+      // Redirect the user to Stripe Checkout
+      res.status(200).json({ url: session.url });  // Send the Stripe Checkout session URL to the frontend
     } else {
       res.status(404);
       throw new Error("Order not found");
     }
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 const markOrderAsDelivered = async (req, res) => {
   try {

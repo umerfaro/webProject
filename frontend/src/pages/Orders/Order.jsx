@@ -1,19 +1,18 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import Message from "../../components/Message"; // Corrected import
+import Message from "../../components/Message"; 
 import Loader from "../../components/Loader";
 import {
   useDeliverOrderMutation,
   useGetOrderDetailsQuery,
-  useGetPaypalClientIdQuery,
   usePayOrderMutation,
 } from "../../redux/api/orderApiSlice";
 
 const Order = () => {
   const { id: orderId } = useParams();
+  const [paymentLoading, setPaymentLoading] = useState(false);  
 
   const {
     data: order,
@@ -26,65 +25,10 @@ const Order = () => {
   const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
-
-  const {
-    data: paypal,
-    isLoading: loadingPaPal,
-    error: errorPayPal,
-  } = useGetPaypalClientIdQuery();
-
   // Determine the user's role
   const isAdmin = userInfo?.isAdmin;
   const isSeller = userInfo?.isSeller;
   const isUser = userInfo && !isAdmin && !isSeller;
-
-  useEffect(() => {
-    if (!errorPayPal && !loadingPaPal && paypal?.clientId) {
-      const loadPaypalScript = async () => {
-        paypalDispatch({
-          type: "resetOptions",
-          value: {
-            "client-id": paypal.clientId,
-            currency: "USD",
-          },
-        });
-        paypalDispatch({ type: "setLoadingStatus", value: "pending" });
-      };
-
-      if (order && !order.isPaid) {
-        if (!window.paypal) {
-          loadPaypalScript();
-        }
-      }
-    }
-  }, [errorPayPal, loadingPaPal, order, paypal, paypalDispatch]);
-
-  const onApprove = async (data, actions) => {
-    return actions.order.capture().then(async function (details) {
-      try {
-        await payOrder({ orderId, details }).unwrap();
-        refetch();
-        toast.success("Order has been paid");
-      } catch (error) {
-        toast.error(error?.data?.message || error.message);
-      }
-    });
-  };
-
-  const createOrder = (data, actions) => {
-    return actions.order
-      .create({
-        purchase_units: [{ amount: { value: order.totalPrice.toFixed(2) } }],
-      })
-      .then((orderID) => {
-        return orderID;
-      });
-  };
-
-  const onError = (err) => {
-    toast.error(err.message);
-  };
 
   const deliverHandler = async () => {
     try {
@@ -96,6 +40,42 @@ const Order = () => {
     }
   };
 
+  const handlePayment = async () => {
+    setPaymentLoading(true);
+    const itemsDetails = order.orderItems.map(item => ({
+      name: item.name,
+    }));
+  
+    const totalAmount = order.totalPrice;
+  
+    try {
+      // Payment details to send to the backend
+      const paymentDetails = {
+        status: "completed",
+        update_time: new Date().toISOString(),
+        payer: {
+          email_address: "payer@example.com", // You can update this to fetch from the actual user
+        },
+        items: itemsDetails,
+        totalAmount,
+      };
+  
+      // Call the backend to initiate the payment process and get the session URL
+      const response = await payOrder({ orderId, details: paymentDetails }).unwrap();
+  
+      // If the backend returns a URL, redirect the user to Stripe Checkout
+      if (response.url) {
+        window.location.href = response.url;
+      }
+  
+      toast.success("Redirecting to payment...");
+    } catch (error) {
+      toast.error(error?.data?.message || error?.error || "Payment initiation failed");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+  
   return isLoading ? (
     <Loader />
   ) : error ? (
@@ -114,7 +94,6 @@ const Order = () => {
                   <tr>
                     <th className="p-2 text-left">Image</th>
                     <th className="p-2 text-left">Product</th>
-                   
                     <th className="p-2 text-center">Quantity</th>
                     <th className="p-2 text-center">Unit Price</th>
                     <th className="p-2 text-center">Total</th>
@@ -135,7 +114,6 @@ const Order = () => {
                           {item.name}
                         </Link>
                       </td>
-                    
                       <td className="p-2 text-center">{item.qty}</td>
                       <td className="p-2 text-center">${item.price.toFixed(2)}</td>
                       <td className="p-2 text-center">${(item.qty * item.price).toFixed(2)}</td>
@@ -180,7 +158,6 @@ const Order = () => {
           )}
         </div>
 
-
         {/* Order Summary */}
         <div className="border border-gray-300 p-4 rounded-lg bg-black">
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
@@ -204,15 +181,15 @@ const Order = () => {
           {/* Payment Section - Visible Only to Regular Users */}
           {!order.isPaid && isUser && (
             <div className="mb-4">
-              {loadingPay && <Loader />}
-              {isPending ? (
+              {paymentLoading ? (
                 <Loader />
               ) : (
-                <PayPalButtons
-                  createOrder={createOrder}
-                  onApprove={onApprove}
-                  onError={onError}
-                />
+                <button
+                  onClick={handlePayment}
+                  className="w-full bg-pink-500 text-white py-2 rounded hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                  Pay Now
+                </button>
               )}
             </div>
           )}
