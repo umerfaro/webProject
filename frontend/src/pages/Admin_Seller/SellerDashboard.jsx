@@ -69,7 +69,7 @@ const AdminDashboard = () => {
     if (salesDetail) {
       const formattedSalesDate = salesDetail.map((item) => ({
         x: item._id,
-        y: item.totalSales,
+        y: item.totalSales || 0, // Fallback to 0 if totalSales is undefined
       }));
 
       setState((prevState) => ({
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
 
             <p className="mt-5">Sales</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading ? <Loader /> : sales.totalSales.toFixed(2)}
+              $ {isLoading || !sales ? <Loader /> : sales.totalSales?.toFixed(2) || "0.00"}
             </h1>
           </div>
           <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
 
             <p className="mt-5">Customers</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading ? <Loader /> : customers?.length}
+              {loading ? <Loader /> : customers?.length || 0}
             </h1>
           </div>
           <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
@@ -121,7 +121,7 @@ const AdminDashboard = () => {
 
             <p className="mt-5">All Orders</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading ? <Loader /> : orders?.totalOrders}
+              {loadingTwo ? <Loader /> : orders?.totalOrders || 0}
             </h1>
           </div>
         </div>
@@ -144,3 +144,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

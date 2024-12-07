@@ -34,6 +34,7 @@ const OrderList = () => {
 
           <tbody>
             {orders.map((order) => (
+              console.log(order),
               <tr key={order._id}>
                 <td>
                   <img

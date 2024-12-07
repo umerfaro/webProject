@@ -33,12 +33,70 @@ function calcPrices(orderItems) {
   };
 }
 
+// const createOrder = async (req, res) => {
+
+//   try {
+//     const { orderItems, shippingAddress, paymentMethod } = req.body;
+//     console.log(orderItems);
+
+//     if (orderItems && orderItems.length === 0) {
+//       res.status(400);
+//       throw new Error("No order items");
+//     }
+
+//     const itemsFromDB = await Product.find({
+//       _id: { $in: orderItems.map((x) => x._id) },
+//     });
+
+//     const dbOrderItems = orderItems.map((itemFromClient) => {
+//       const matchingItemFromDB = itemsFromDB.find(
+//         (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
+//       );
+
+//       if (!matchingItemFromDB) {
+//         res.status(404);
+//         throw new Error(`Product not found: ${itemFromClient._id}`);
+//       }
+
+//       return {
+//         ...itemFromClient,
+//         product: itemFromClient._id,
+//         price: matchingItemFromDB.price,
+//         _id: undefined,
+//       };
+//     });
+
+//     const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+//       calcPrices(dbOrderItems);
+
+//     // Fetch uploader from the first item (or any other logic you want to use)
+//     const uploadedBy = itemsFromDB[0].uploadedBy;
+
+//     const order = new Order({
+//       orderItems: dbOrderItems,
+//       user: req.user._id,
+//       uploadedBy, // Store the uploader at the order level
+//       shippingAddress,
+//       paymentMethod,
+//       itemsPrice,
+//       taxPrice,
+//       shippingPrice,
+//       totalPrice,
+//     });
+
+//     const createdOrder = await order.save();
+//     res.status(201).json(createdOrder);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
 const createOrder = async (req, res) => {
   try {
     const { orderItems, shippingAddress, paymentMethod } = req.body;
-    console.log(orderItems);
 
-    if (orderItems && orderItems.length === 0) {
+    if (!orderItems || orderItems.length === 0) {
       res.status(400);
       throw new Error("No order items");
     }
@@ -65,16 +123,27 @@ const createOrder = async (req, res) => {
       };
     });
 
+    const uploadedByMap = {};
+    itemsFromDB.forEach((item) => {
+      const uploaderId = item.uploadedBy.toString();
+      if (!uploadedByMap[uploaderId]) {
+        uploadedByMap[uploaderId] = [];
+      }
+      uploadedByMap[uploaderId].push(item._id);
+    });
+
+    const uploadedBy = Object.keys(uploadedByMap).map((uploaderId) => ({
+      uploaderId,
+      products: uploadedByMap[uploaderId],
+    }));
+
     const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
       calcPrices(dbOrderItems);
-
-    // Fetch uploader from the first item (or any other logic you want to use)
-    const uploadedBy = itemsFromDB[0].uploadedBy;
 
     const order = new Order({
       orderItems: dbOrderItems,
       user: req.user._id,
-      uploadedBy, // Store the uploader at the order level
+      uploadedBy, // Store grouped uploader information
       shippingAddress,
       paymentMethod,
       itemsPrice,
@@ -90,7 +159,9 @@ const createOrder = async (req, res) => {
   }
 };
 
+
 const getAllOrders = async (req, res) => {
+
   try {
     // If the user is an admin, show all orders
     if (req.user.isAdmin) {
@@ -99,36 +170,30 @@ const getAllOrders = async (req, res) => {
     }
 
     // If the user is a seller, show only their orders
-    const orders = await Order.find({ uploadedBy: req.user._id }).populate(
+    const orders = await Order.find({ "uploadedBy.uploaderId": req.user._id, }).populate(
       "user",
       "id username"
     );
+
+    
+
+    console.log(orders);
     res.json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// const getAllOrders = async (req, res) => {
-//   try {
-//     if (req.user.isSeller) {
 
-//         // If the user is a seller, show only their orders
-//     const orders = await Order.find({ uploadedBy: req.user._id }).populate("user", "id username");
-//     res.json(orders);
-//     }
-
-//     const orders = await Order.find({}).populate("user", "id username");
-//     res.json(orders);
-
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }); // Fetch orders by user ID
+    const orders = await Order.find({ "uploadedBy.uploaderId": req.user._id, }).populate(
+      "user",
+      "id username"
+    );
+
+    console.log(orders);
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -186,12 +251,12 @@ const findOrderById = async (req, res) => {
       res.status(404).json({ message: "Order not found" });
       return;
     }
-    if (order.user.toString() !== req.user._id.toString()) {
-      res
-        .status(403)
-        .json({ message: "You are not authorized to view this order" });
-      return;
-    }
+    // if (order.user.toString() !== req.user._id.toString()) {
+    //   res
+    //     .status(403)
+    //     .json({ message: "You are not authorized to view this order" });
+    //   return;
+    // }
     res.json(order);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
