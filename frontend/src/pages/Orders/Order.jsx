@@ -9,7 +9,7 @@ import {
   useGetOrderDetailsQuery,
   usePayOrderMutation,
 } from "../../redux/api/orderApiSlice";
-
+import { useGetUserDetailsQuery } from "../../redux/api/usersApiSlice"; 
 const Order = () => {
   const { id: orderId } = useParams();
   const [paymentLoading, setPaymentLoading] = useState(false);  
@@ -21,9 +21,13 @@ const Order = () => {
     error,
   } = useGetOrderDetailsQuery(orderId);
 
+
+
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
   const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
   const { userInfo } = useSelector((state) => state.auth);
+  const { data: user, isLoading: userLoading, error: userError } = useGetUserDetailsQuery(order?.user);
+  
 
   // Determine the user's role
   const isAdmin = userInfo?.isAdmin;
@@ -51,13 +55,14 @@ const Order = () => {
       (sum, item) => sum + (item.qty || 0),
       0
     );
+    const userEmail = user.email;
     try {
       // Payment details to send to the backend
       const paymentDetails = {
         status: "completed",
         update_time: new Date().toISOString(),
         payer: {
-          email_address: "payer@example.com",
+          email_address: userEmail,
         },
         items: itemsDetails,
         totalAmount,
@@ -140,11 +145,11 @@ const Order = () => {
           </p>
           <p className="mb-2">
             <strong className="text-pink-500">Name:</strong>{" "}
-            {order.user ? order.user.username : "N/A"}
+            {user ? user.username : "N/A"}
           </p>
           <p className="mb-2">
             <strong className="text-pink-500">Email:</strong>{" "}
-            {order.user ? order.user.email : "N/A"}
+            {user ? user.email : "N/A"}
           </p>
           <p className="mb-2">
             <strong className="text-pink-500">Address:</strong>{" "}
