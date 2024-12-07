@@ -37,7 +37,7 @@ router
 router
   .route("/:id")
   .delete(authenticate, authorizeAdmin, deleteUserById)
-  .get(authenticate, authorizeAdmin, getUserById)
+  .get(authenticate, getUserById)
   .put(authenticate, authorizeAdmin, updateUserById);
 
 export default router;

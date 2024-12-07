@@ -10,7 +10,7 @@ const Cart = () => {
 
   const cart = useSelector((state) => state.cart);
   const { cartItems } = cart;
-
+  
   const addToCartHandler = (product, qty) => {
     dispatch(addToCart({ ...product, qty }));
   };
@@ -68,7 +68,7 @@ const Cart = () => {
                     {item.name}
                   </Link>
                   <div className="text-gray-600 mt-2">{item.brand}</div>
-                  <div className="text-lg font-bold mt-2">${item.price}</div>
+                  <div className="text-lg font-bold mt-2">${item.price - (item.price * item.discount) / 100}</div>
                 </div>
 
                 {/* Quantity Selector */}
@@ -108,7 +108,7 @@ const Cart = () => {
             </h2>
             <div className="text-2xl font-bold mb-4">
               ${cartItems
-                .reduce((acc, item) => acc + item.qty * item.price, 0)
+                .reduce((acc, item) => acc + item.qty * (item.price - (item.price * item.discount) / 100) , 0)
                 .toFixed(2)}
             </div>
 

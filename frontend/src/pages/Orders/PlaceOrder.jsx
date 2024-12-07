@@ -12,15 +12,21 @@ const PlaceOrder = () => {
   const navigate = useNavigate();
 
   const cart = useSelector((state) => state.cart);
-
+  let totDiscounted = 0;
+  for (let item of cart.cartItems) {
+    totDiscounted += (item.price - (item.price * item.discount) / 100);
+  }
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
-
   useEffect(() => {
     if (!cart.shippingAddress.address) {
       navigate("/shipping");
     }
   }, [cart.paymentMethod, cart.shippingAddress.address, navigate]);
-
+  const totPrice = parseFloat((
+    (parseFloat(totDiscounted) || 0) +
+    (parseFloat(cart.shippingPrice) || 0) +
+    (parseFloat(cart.taxPrice) || 0)
+  ).toFixed(2));
   const dispatch = useDispatch();
 
   const placeOrderHandler = async () => {
@@ -29,11 +35,12 @@ const PlaceOrder = () => {
         orderItems: cart.cartItems,
         shippingAddress: cart.shippingAddress,
         paymentMethod: cart.paymentMethod,
-        itemsPrice: cart.itemsPrice,
+        itemsPrice: totDiscounted,
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
-        totalPrice: cart.totalPrice,
+        totalPrice: totPrice,
       }).unwrap();
+      console.log(res);
       dispatch(clearCartItems());
       navigate(`/order/${res._id}`);
     } catch (error) {
@@ -63,6 +70,7 @@ const PlaceOrder = () => {
 
               <tbody>
                 {cart.cartItems.map((item, index) => (
+                  
                   <tr key={index}>
                     <td className="p-2">
                       <img
@@ -76,9 +84,9 @@ const PlaceOrder = () => {
                       <Link to={`/product/${item.product}`}>{item.name}</Link>
                     </td>
                     <td className="p-2">{item.qty}</td>
-                    <td className="p-2">{item.price.toFixed(2)}</td>
+                    <td className="p-2">{item.price - (item.price * item.discount) / 100}</td>
                     <td className="p-2">
-                      $ {(item.qty * item.price).toFixed(2)}
+                      $ {(item.qty * (item.price - (item.price * item.discount) / 100)).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -92,38 +100,25 @@ const PlaceOrder = () => {
           <div className="flex justify-between flex-wrap p-8 bg-[#181818]">
             <ul className="text-lg">
               <li>
-                <span className="font-semibold mb-4">Items:</span> $
-                {cart.itemsPrice}
+                <span className="font-semibold mb-4">Items Price:</span> $
+                {totDiscounted}
               </li>
-              <li>
-                <span className="font-semibold mb-4">Shipping:</span> $
-                {cart.shippingPrice}
-              </li>
-              <li>
-                <span className="font-semibold mb-4">Tax:</span> $
-                {cart.taxPrice}
-              </li>
-              <li>
-                <span className="font-semibold mb-4">Total:</span> $
-                {cart.totalPrice}
-              </li>
+              <br></br>
+              <div>
+                <h2 className="text-2xl font-semibold mb-4">Shipping</h2>
+                  <p>
+                    <strong>Address:</strong> {cart.shippingAddress.address},{" "}
+                    {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{" "}
+                    {cart.shippingAddress.country}
+                  </p>
+                </div>
             </ul>
 
             {error && <Message variant="danger">{error.data.message}</Message>}
 
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Shipping</h2>
-              <p>
-                <strong>Address:</strong> {cart.shippingAddress.address},{" "}
-                {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{" "}
-                {cart.shippingAddress.country}
-              </p>
-            </div>
+            
 
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Payment Method</h2>
-              <strong>Method:</strong> {cart.paymentMethod}
-            </div>
+           
           </div>
 
           <button

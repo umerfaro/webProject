@@ -18,6 +18,7 @@ const ProductList = () => {
   const [brand, setBrand] = useState(""); // Stores the brand name
   const [stock, setStock] = useState(0); // Stores the stock count
   const [imageUrl, setImageUrl] = useState(null); // Stores the image preview URL
+  const [discount, setDiscount] = useState(0);
 
   const navigate = useNavigate(); // Hook to navigate to other pages
 
@@ -46,6 +47,7 @@ const ProductList = () => {
       productData.append("quantity", quantity);
       productData.append("brand", brand);
       productData.append("countInStock", stock);
+      productData.append("discount", discount);
 
       // Call the mutation to create the product
       const { data } = await createProduct(productData);
@@ -63,6 +65,7 @@ const ProductList = () => {
         setQuantity("");
         setBrand("");
         setStock(0);
+        setDiscount(0);
         setImage(""); // Clear the image file state
         setImageUrl(null); // Clear the image URL preview
 
@@ -172,6 +175,22 @@ const ProductList = () => {
                   onChange={(e) => setQuantity(e.target.value)}
                   placeholder="Enter product quantity"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-2" htmlFor="brand">
+                  Discount (%)
+                </label>
+                <input
+                  type="number"
+                  id="discount"
+                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                  placeholder="Enter discount (0-100)"
+                  min="0"
+                  max="100"
                 />
               </div>
 

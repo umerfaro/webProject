@@ -1,19 +1,18 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import Message from "../../components/Message"; // Corrected import
+import Message from "../../components/Message";
 import Loader from "../../components/Loader";
 import {
   useDeliverOrderMutation,
   useGetOrderDetailsQuery,
-  useGetPaypalClientIdQuery,
   usePayOrderMutation,
 } from "../../redux/api/orderApiSlice";
-
+import { useGetUserDetailsQuery } from "../../redux/api/usersApiSlice";
 const Order = () => {
   const { id: orderId } = useParams();
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const {
     data: order,
@@ -21,70 +20,22 @@ const Order = () => {
     isLoading,
     error,
   } = useGetOrderDetailsQuery(orderId);
+  console.log(order);
 
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
-  const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
+  const [deliverOrder, { isLoading: loadingDeliver }] =
+    useDeliverOrderMutation();
   const { userInfo } = useSelector((state) => state.auth);
-
-  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
-
   const {
-    data: paypal,
-    isLoading: loadingPaPal,
-    error: errorPayPal,
-  } = useGetPaypalClientIdQuery();
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = useGetUserDetailsQuery(order?.user);
 
   // Determine the user's role
   const isAdmin = userInfo?.isAdmin;
   const isSeller = userInfo?.isSeller;
   const isUser = userInfo && !isAdmin && !isSeller;
-
-  useEffect(() => {
-    if (!errorPayPal && !loadingPaPal && paypal?.clientId) {
-      const loadPaypalScript = async () => {
-        paypalDispatch({
-          type: "resetOptions",
-          value: {
-            "client-id": paypal.clientId,
-            currency: "USD",
-          },
-        });
-        paypalDispatch({ type: "setLoadingStatus", value: "pending" });
-      };
-
-      if (order && !order.isPaid) {
-        if (!window.paypal) {
-          loadPaypalScript();
-        }
-      }
-    }
-  }, [errorPayPal, loadingPaPal, order, paypal, paypalDispatch]);
-
-  const onApprove = async (data, actions) => {
-    return actions.order.capture().then(async function (details) {
-      try {
-        await payOrder({ orderId, details }).unwrap();
-        refetch();
-        toast.success("Order has been paid");
-      } catch (error) {
-        toast.error(error?.data?.message || error.message);
-      }
-    });
-  };
-
-  const createOrder = (data, actions) => {
-    return actions.order
-      .create({
-        purchase_units: [{ amount: { value: order.totalPrice.toFixed(2) } }],
-      })
-      .then((orderID) => {
-        return orderID;
-      });
-  };
-
-  const onError = (err) => {
-    toast.error(err.message);
-  };
 
   const deliverHandler = async () => {
     try {
@@ -93,6 +44,49 @@ const Order = () => {
       toast.success("Order marked as delivered");
     } catch (error) {
       toast.error(error?.data?.message || error.error);
+    }
+  };
+
+  const handlePayment = async () => {
+    setPaymentLoading(true);
+    const itemsDetails = order.orderItems.map((item) => ({
+      name: item.name,
+    }));
+
+    const totalAmount = order.totalPrice;
+    const totalQuantity = 1;
+    const userEmail = user.email;
+    try {
+      // Payment details to send to the backend
+      const paymentDetails = {
+        status: "completed",
+        update_time: new Date().toISOString(),
+        payer: {
+          email_address: userEmail,
+        },
+        items: itemsDetails,
+        totalAmount,
+        totalQuantity,
+      };
+
+      // Call the backend to initiate the payment process and get the session URL
+      const response = await payOrder({
+        orderId,
+        details: paymentDetails,
+      }).unwrap();
+
+      // If the backend returns a URL, redirect the user to Stripe Checkout
+      if (response.url) {
+        window.location.href = response.url;
+      }
+
+      toast.success("Redirecting to payment...");
+    } catch (error) {
+      toast.error(
+        error?.data?.message || error?.error || "Payment initiation failed"
+      );
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -114,7 +108,6 @@ const Order = () => {
                   <tr>
                     <th className="p-2 text-left">Image</th>
                     <th className="p-2 text-left">Product</th>
-                   
                     <th className="p-2 text-center">Quantity</th>
                     <th className="p-2 text-center">Unit Price</th>
                     <th className="p-2 text-center">Total</th>
@@ -131,14 +124,28 @@ const Order = () => {
                         />
                       </td>
                       <td className="p-2">
-                        <Link to={`/product/${item.product}`} className="text-white-600 hover:underline">
+                        <Link
+                          to={`/product/${item.product}`}
+                          className="text-white-600 hover:underline"
+                        >
                           {item.name}
                         </Link>
                       </td>
-                    
                       <td className="p-2 text-center">{item.qty}</td>
-                      <td className="p-2 text-center">${item.price.toFixed(2)}</td>
-                      <td className="p-2 text-center">${(item.qty * item.price).toFixed(2)}</td>
+                      <td className="p-2 text-center">
+                        $
+                        {(
+                          item.price -
+                          (item.price * item.discount) / 100
+                        ).toFixed(2)}
+                      </td>
+                      <td className="p-2 text-center">
+                        $
+                        {(
+                          item.qty *
+                          (item.price - (item.price * item.discount) / 100)
+                        ).toFixed(2)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -158,28 +165,25 @@ const Order = () => {
           </p>
           <p className="mb-2">
             <strong className="text-pink-500">Name:</strong>{" "}
-            {order.user ? order.user.username : "N/A"}
+            {user ? user.username : "N/A"}
           </p>
           <p className="mb-2">
             <strong className="text-pink-500">Email:</strong>{" "}
-            {order.user ? order.user.email : "N/A"}
+            {user ? user.email : "N/A"}
           </p>
           <p className="mb-2">
             <strong className="text-pink-500">Address:</strong>{" "}
             {order.shippingAddress.address}, {order.shippingAddress.city},{" "}
             {order.shippingAddress.postalCode}, {order.shippingAddress.country}
           </p>
-          <p className="mb-2">
-            <strong className="text-pink-500">Payment Method:</strong>{" "}
-            {order.paymentMethod}
-          </p>
           {order.isPaid ? (
-            <Message variant="success">Paid on {new Date(order.paidAt).toLocaleDateString()}</Message>
+            <Message variant="success">
+              Paid on {new Date(order.paidAt).toLocaleDateString()}
+            </Message>
           ) : (
             <Message variant="error">Not Paid</Message>
           )}
         </div>
-
 
         {/* Order Summary */}
         <div className="border border-gray-300 p-4 rounded-lg bg-black">
@@ -204,15 +208,15 @@ const Order = () => {
           {/* Payment Section - Visible Only to Regular Users */}
           {!order.isPaid && isUser && (
             <div className="mb-4">
-              {loadingPay && <Loader />}
-              {isPending ? (
+              {paymentLoading ? (
                 <Loader />
               ) : (
-                <PayPalButtons
-                  createOrder={createOrder}
-                  onApprove={onApprove}
-                  onError={onError}
-                />
+                <button
+                  onClick={handlePayment}
+                  className="w-full bg-pink-500 text-white py-2 rounded hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                  Pay Now
+                </button>
               )}
             </div>
           )}
