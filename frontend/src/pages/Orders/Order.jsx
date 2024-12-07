@@ -20,9 +20,9 @@ const Order = () => {
     isLoading,
     error,
   } = useGetOrderDetailsQuery(orderId);
-
-
-
+  let totDiscounted = 0;
+  console.log(order);
+  
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
   const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
   const { userInfo } = useSelector((state) => state.auth);
@@ -33,7 +33,7 @@ const Order = () => {
   const isAdmin = userInfo?.isAdmin;
   const isSeller = userInfo?.isSeller;
   const isUser = userInfo && !isAdmin && !isSeller;
-
+  
   const deliverHandler = async () => {
     try {
       await deliverOrder(orderId).unwrap();
@@ -50,7 +50,7 @@ const Order = () => {
       name: item.name,
     }));
   
-    const totalAmount = order.totalPrice;
+    const totalAmount = totDiscounted;
     const totalQuantity = order.orderItems.reduce(
       (sum, item) => sum + (item.qty || 0),
       0
@@ -124,8 +124,8 @@ const Order = () => {
                         </Link>
                       </td>
                       <td className="p-2 text-center">{item.qty}</td>
-                      <td className="p-2 text-center">${item.price.toFixed(2)}</td>
-                      <td className="p-2 text-center">${(item.qty * item.price).toFixed(2)}</td>
+                      <td className="p-2 text-center">${(item.price - (item.price * item.discount) / 100).toFixed(2)}</td>
+                      <td className="p-2 text-center">${(item.qty * (item.price - (item.price * item.discount) / 100)).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -168,7 +168,7 @@ const Order = () => {
           <h2 className="text-xl font-bold mb-4">Order Summary</h2>
           <div className="flex justify-between mb-2">
             <span>Items</span>
-            <span>${order.itemsPrice.toFixed(2)}</span>
+            <span>${totDiscounted}</span>
           </div>
           <div className="flex justify-between mb-2">
             <span>Shipping</span>
@@ -180,7 +180,7 @@ const Order = () => {
           </div>
           <div className="flex justify-between mb-4 font-bold">
             <span>Total</span>
-            <span>${order.totalPrice.toFixed(2)}</span>
+            <span>${(totDiscounted + order.shippingPrice + order.taxPrice).toFixed(2)}</span>
           </div>
 
           {/* Payment Section - Visible Only to Regular Users */}

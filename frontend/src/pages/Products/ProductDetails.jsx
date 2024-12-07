@@ -99,17 +99,24 @@ const ProductDetails = () => {
               <h2 className="text-3xl font-semibold mb-4">{product.name}</h2>
               <p className="text-lg text-gray-500 mb-4">{product.description}</p>
 
-              <div className="flex items-center mb-4">
-                <p className="text-2xl font-bold text-gray-800 mr-4">
-                  ${product.price}
-                </p>
-                <Ratings
-                  value={product.rating}
-                  text={`(${product.numReviews} reviews)`}
-                />
-              </div>
-
-              <div className="flex justify-between mb-4">
+            <div className="flex items-center mb-4">
+              <p className="text-2xl font-bold text-gray-800 mr-4">
+                ${product.price - (product.price * product.discount) / 100}
+              </p>
+              {product.discount > 0 && (
+                <div className="flex items-center">
+                  <span className="text-xl font-medium text-green-600 pr-4">
+                    ({product.discount}% off)
+                  </span>
+                </div>
+                )}
+              <Ratings
+                value={product.rating}
+                text={`(${product.numReviews} reviews)`}
+              />  
+            </div>
+            
+            <div className="flex justify-between mb-4">
                 <div>
                   <p className="text-sm text-gray-500 flex items-center">
                     <FaStore className="mr-2" /> Brand: {product.brand}

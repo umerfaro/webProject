@@ -71,6 +71,12 @@ const productSchema = mongoose.Schema(
       required: true,
       ref: "User",
     },
+    discount: {
+      type: Number,
+      default: 0,
+      min: [0, "Discount cannot be less than 0"],
+      max: [100, "Discount cannot be more than 100"],
+    },
     // Optionally, store uploader's name for quick access
     // uploadedByName: {
     //   type: String,
