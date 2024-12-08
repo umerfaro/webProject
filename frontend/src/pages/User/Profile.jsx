@@ -18,7 +18,8 @@ const Profile = () => {
   // Access userInfo from Redux store
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [updateProfile, { isLoading: loadingUpdateProfile }] = useProfileMutation();
+  const [updateProfile, { isLoading: loadingUpdateProfile }] =
+    useProfileMutation();
 
   useEffect(() => {
     if (userInfo) {
@@ -51,63 +52,68 @@ const Profile = () => {
   const isRegularUser = !userInfo?.isAdmin && !userInfo?.isSeller;
 
   return (
-    <div className="container mx-auto p-4 mt-[10rem] bg-black-100 min-h-screen">
+    <div className="container mx-auto p-6 mt-10 bg-gray-900 min-h-screen">
       <div className="flex justify-center align-center md:flex md:space-x-4">
-        <div className="md:w-1/3">
-          <h2 className="text-2xl font-semibold mb-4 text-white">Update Profile</h2>
-          <form onSubmit={submitHandler} className="bg-black-800 p-6 rounded-lg shadow-md">
-            <div className="mb-4">
+        <div className="md:w-1/2 lg:w-1/3">
+          <h2 className="text-3xl font-semibold mb-6 text-white text-center">
+            Update Profile
+          </h2>
+          <form
+            onSubmit={submitHandler}
+            className="bg-gray-800 p-8 rounded-lg shadow-lg"
+          >
+            <div className="mb-6">
               <label className="block text-white mb-2">Name</label>
               <input
                 type="text"
                 placeholder="Enter name"
-                className="form-input p-2 rounded-lg w-full text-black"
+                className="form-input p-4 rounded-lg w-full text-gray-900"
                 value={username}
                 onChange={(e) => setUserName(e.target.value)}
                 required
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-white mb-2">Email Address</label>
               <input
                 type="email"
                 placeholder="Enter email"
-                className="form-input p-2 rounded-lg w-full text-black"
+                className="form-input p-4 rounded-lg w-full text-gray-900"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-white mb-2">Password</label>
               <input
                 type="password"
                 placeholder="Enter password"
-                className="form-input p-2 rounded-lg w-full text-black"
+                className="form-input p-4 rounded-lg w-full text-gray-900"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-white mb-2">Confirm Password</label>
               <input
                 type="password"
                 placeholder="Confirm password"
-                className="form-input p-2 rounded-lg w-full text-black"
+                className="form-input p-4 rounded-lg w-full text-gray-900"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-6">
               <button
                 type="submit"
-                className="bg-pink-500 text-white py-2 px-4 rounded hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="bg-pink-600 text-white py-3 px-6 rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
               >
                 Update
               </button>
@@ -116,12 +122,13 @@ const Profile = () => {
               {isRegularUser && (
                 <Link
                   to="/user-orders"
-                  className="bg-pink-600 text-white py-2 px-4 rounded hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-600"
+                  className="bg-pink-700 text-white py-3 px-6 rounded-lg hover:bg-pink-800 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
                 >
                   My Orders
                 </Link>
               )}
             </div>
+
             {loadingUpdateProfile && <Loader />}
           </form>
         </div>
