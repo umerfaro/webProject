@@ -5,13 +5,16 @@ import ProductCarousel from "../pages/Products/ProductCarousel";
 
 const Header = () => {
   const { data, isLoading, error } = useGetTopProductsQuery();
-
   if (isLoading) {
     return <Loader />;
   }
 
   if (error) {
-    return <h1 className="text-red-500 text-center font-bold">An error occurred. Please try again later.</h1>;
+    return (
+      <h1 className="text-red-500 text-center font-bold">
+        An error occurred. Please try again later.
+      </h1>
+    );
   }
 
   return (
