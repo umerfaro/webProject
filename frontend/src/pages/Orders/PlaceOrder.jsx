@@ -57,13 +57,13 @@ const PlaceOrder = () => {
     <>
       <ProgressSteps step1 step2 step3 />
 
-      <div className="container mx-auto mt-10">
+      <div className="container mx-auto mt-12 px-4">
         {cart.cartItems.length === 0 ? (
           <Message>Your cart is empty</Message>
         ) : (
-          <div className="overflow-x-auto shadow-lg rounded-lg">
+          <div className="overflow-x-auto shadow-lg rounded-lg mb-8">
             <table className="w-full table-auto border-separate border-spacing-4">
-              <thead className="bg-gray-800 text-white">
+              <thead className="bg-gray-900 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Image</th>
                   <th className="px-4 py-3 text-left">Product</th>
@@ -79,7 +79,7 @@ const PlaceOrder = () => {
                       <img
                         src={item.image}
                         alt={item.name}
-                        className="w-16 h-16 object-cover rounded-md"
+                        className="w-16 h-16 object-cover rounded-md shadow-md"
                       />
                     </td>
                     <td className="p-4">
@@ -113,22 +113,24 @@ const PlaceOrder = () => {
         )}
 
         <div className="mt-10 bg-gray-800 text-white p-8 rounded-lg shadow-xl">
-          <h2 className="text-3xl font-semibold mb-6">Order Summary</h2>
-          <div className="mb-4">
+          <h2 className="text-3xl font-semibold mb-6 text-center">
+            Order Summary
+          </h2>
+          <div className="mb-4 space-y-2">
             <ul className="text-lg">
-              <li className="mb-2">
+              <li>
                 <span className="font-semibold">Items Price:</span> $
                 {totDiscounted.toFixed(2)}
               </li>
-              <li className="mb-2">
+              <li>
                 <span className="font-semibold">Shipping Price:</span> $
                 {cart.shippingPrice}
               </li>
-              <li className="mb-2">
+              <li>
                 <span className="font-semibold">Tax Price:</span> $
                 {cart.taxPrice}
               </li>
-              <li className="mb-2">
+              <li>
                 <span className="font-semibold">Total Price:</span> $
                 {totPrice.toFixed(2)}
               </li>
