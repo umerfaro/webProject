@@ -23,15 +23,15 @@ const ProductCard = ({ p }) => {
   const isUserSellerOrAdmin = userInfo?.isSeller || userInfo?.isAdmin;
 
   return (
-    <div className="max-w-sm relative bg-white rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
+    <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 ease-in-out transform hover:scale-105 dark:bg-gray-800 dark:border-gray-700">
       {/* Product Image Section */}
-      <section className="relative">
+      <section className="relative overflow-hidden rounded-t-lg">
         <Link to={`/product/${p._id}`}>
-          <span className="absolute bottom-3 right-3 bg-pink-100 text-pink-800 text-sm font-medium px-2.5 py-0.5 rounded-full dark:bg-pink-900 dark:text-pink-300">
+          <span className="absolute bottom-3 right-3 bg-pink-100 text-pink-800 text-sm font-medium px-3 py-1 rounded-full dark:bg-pink-900 dark:text-pink-300">
             {p?.brand || "Brand"}
           </span>
           <img
-            className="cursor-pointer w-full h-[200px] object-cover rounded-t-lg"
+            className="w-[300px] h-[200px] object-cover transition-transform duration-500 ease-in-out hover:scale-110"
             src={p.image}
             alt={p.name}
           />
@@ -40,28 +40,46 @@ const ProductCard = ({ p }) => {
       </section>
 
       {/* Product Details Section */}
-      <div className="p-5">
+      <div className="p-5 space-y-3">
         <div className="flex justify-between items-center mb-2">
-          <h5 className="text-lg font-semibold text-gray-800 dark:text-white truncate">
+          <h5 className="text-xl font-semibold text-gray-800 dark:text-white truncate">
             {p?.name}
           </h5>
-          <p className="text-pink-500 font-bold">
-            {p?.price?.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
+          <p className="flex items-center space-x-2">
+            {/* Display original price with strike-through if discount is available */}
+            {p?.discount && (
+              <span className="text-gray-500 line-through">
+                {p?.price?.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                })}
+              </span>
+            )}
+
+            {/* Display the discounted price */}
+            <span className="text-pink-500 font-bold">
+              {p?.discount
+                ? (p.price - p.discount).toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  })
+                : p?.price?.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  })}
+            </span>
           </p>
         </div>
 
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           {p?.description?.substring(0, 60) || "No description available"}...
         </p>
 
         {/* Action Buttons */}
-        <section className="flex justify-between items-center">
+        <section className="flex justify-between items-center mt-4">
           <Link
             to={`/product/${p._id}`}
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-pink-600 rounded-lg hover:bg-pink-700 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-pink-600 rounded-lg hover:bg-pink-700 transition duration-300 ease-in-out focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
           >
             Read More
             <svg
@@ -84,10 +102,13 @@ const ProductCard = ({ p }) => {
           {/* Conditionally render Add to Cart button */}
           {!isUserSellerOrAdmin && (
             <button
-              className="p-2 rounded-full hover:bg-pink-100 dark:hover:bg-pink-700"
+              className="p-2 rounded-full bg-pink-100 hover:bg-pink-200 dark:bg-pink-700 dark:hover:bg-pink-800 transition duration-300 ease-in-out"
               onClick={() => addToCartHandler(p, 1)}
             >
-              <AiOutlineShoppingCart size={25} />
+              <AiOutlineShoppingCart
+                size={25}
+                className="text-gray-800 dark:text-white"
+              />
             </button>
           )}
         </section>

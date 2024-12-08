@@ -3,7 +3,7 @@ import HeartIcon from "./HeartIcon";
 
 const Product = ({ product }) => {
   return (
-    <div className="bg-black shadow-md rounded-lg overflow-hidden">
+    <div className="bg-black shadow-md border border-gray-300 rounded-lg overflow-hidden">
       {/* Product Image */}
       <div className="relative">
         <img
@@ -22,7 +22,11 @@ const Product = ({ product }) => {
               {product.name}
             </div>
             <span className="bg-pink-800 text-pink-100 text-sm font-medium px-2.5 py-0.5 rounded-full">
-              ${product.price.toFixed(2)}
+              $
+              {(
+                product.price -
+                (product.price * product.discount) / 100
+              ).toFixed(2)}
             </span>
           </h2>
         </Link>
