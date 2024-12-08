@@ -108,11 +108,7 @@ const getAllOrders = async (req, res) => {
 // get all orders
 const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({
-      "uploadedBy.uploaderId": req.user._id,
-    }).populate("user", "id username");
-
-    console.log(orders);
+    const orders = await Order.find({ user: req.user._id }); // Fetch orders by user ID
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
