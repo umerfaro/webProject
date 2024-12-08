@@ -20,6 +20,7 @@ const Home = () => {
         </Message>
       ) : (
         <>
+          <div className="my-8 w-full border-b border-gray-300"></div>
           <div className="flex justify-between items-center mt-10 px-20">
             <h1 className="text-3xl font-bold">Special Products</h1>
 

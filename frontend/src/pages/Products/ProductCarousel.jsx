@@ -23,7 +23,7 @@ const ProductCarousel = () => {
   };
   const limitedProducts = products ? products.slice(0, 3) : [];
   return (
-    <div className="mb-4 w-full max-w-[90%] mx-auto">
+    <div className="mb-4 w-full max-w-[87%] mx-auto">
       {isLoading ? null : error ? (
         <Message variant="danger">
           {error?.data?.message || error.error}

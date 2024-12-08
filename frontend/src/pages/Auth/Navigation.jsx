@@ -9,11 +9,11 @@ import {
 import { FaHeart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import "./Navigation.css";
 import { useSelector, useDispatch } from "react-redux";
 import { useLogoutMutation } from "../../redux/api/usersApiSlice";
 import { logout } from "../../redux/features/auth/authSlice";
 import FavoritesCount from "../Products/FavoritesCount";
+import "./Navigation.css";
 
 const Navigation = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -41,7 +41,6 @@ const Navigation = () => {
     }
   };
 
-  // Determine the user's role
   const isAdmin = userInfo?.isAdmin;
   const isSeller = userInfo?.isSeller;
   const isUser = userInfo && !isAdmin && !isSeller;
@@ -51,14 +50,13 @@ const Navigation = () => {
       style={{ zIndex: 9999 }}
       className={`${
         showSidebar ? "hidden" : "flex"
-      } xl:flex lg:flex md:hidden sm:hidden flex-col justify-between p-4 text-white bg-[#000] w-[4%] hover:w-[15%] h-[100vh] fixed`}
+      } xl:flex lg:flex md:hidden sm:hidden flex-col justify-between p-4 text-white bg-[#000] w-[4%] hover:w-[15%] h-[100vh] fixed sidebar-container transition-all duration-300`}
       id="navigation-container"
     >
-      {/* Navigation Links */}
       <div className="flex flex-col justify-center space-y-4">
         <Link
           to="/"
-          className="flex items-center transition-transform transform hover:translate-x-2"
+          className="flex items-center transition-all duration-300 transform hover:translate-x-2"
         >
           <AiOutlineHome className="mr-2 mt-[3rem]" size={26} />
           <span className="hidden nav-item-name mt-[3rem]">HOME</span>
@@ -66,20 +64,18 @@ const Navigation = () => {
 
         <Link
           to="/shop"
-          className="flex items-center transition-transform transform hover:translate-x-2"
+          className="flex items-center transition-all duration-300 transform hover:translate-x-2"
         >
           <AiOutlineShopping className="mr-2 mt-[3rem]" size={26} />
           <span className="hidden nav-item-name mt-[3rem]">SHOP</span>
         </Link>
 
-        {/* Cart Icon - Only show if the user is not both Admin and Seller */}
         {isUser && (
           <Link to="/cart" className="flex relative">
-            <div className="flex items-center transition-transform transform hover:translate-x-2">
+            <div className="flex items-center transition-all duration-300 transform hover:translate-x-2">
               <AiOutlineShoppingCart className="mt-[3rem] mr-2" size={26} />
               <span className="hidden nav-item-name mt-[3rem]">Cart</span>
             </div>
-
             {cartItems.length > 0 && (
               <div className="absolute top-9">
                 <span className="px-1 py-0 text-sm text-white bg-pink-500 rounded-full">
@@ -91,7 +87,7 @@ const Navigation = () => {
         )}
 
         <Link to="/favorite" className="flex relative">
-          <div className="flex justify-center items-center transition-transform transform hover:translate-x-2">
+          <div className="flex justify-center items-center transition-all duration-300 transform hover:translate-x-2">
             <FaHeart className="mt-[3rem] mr-2" size={20} />
             <span className="hidden nav-item-name mt-[3rem]">Favorites</span>
             <FavoritesCount />
@@ -99,7 +95,6 @@ const Navigation = () => {
         </Link>
       </div>
 
-      {/* User Dropdown */}
       <div className="relative">
         <button
           onClick={toggleDropdown}
@@ -113,7 +108,7 @@ const Navigation = () => {
           {userInfo && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`h-4 w-4 ml-1 ${
+              className={`h-4 w-4 ml-1 transition-all duration-300 ${
                 dropdownOpen ? "transform rotate-180" : ""
               }`}
               fill="none"
@@ -132,11 +127,10 @@ const Navigation = () => {
 
         {dropdownOpen && userInfo && (
           <ul
-            className={`absolute right-0 mt-2 mr-14 space-y-2 bg-white text-gray-600 ${
+            className={`absolute right-0 mt-2 mr-14 space-y-2 bg-white text-gray-600 rounded shadow-lg z-50 transition-all duration-300 ${
               userInfo?.isSeller ? "-top-80" : "-top-48"
-            } rounded shadow-lg`}
+            }`}
           >
-            {/* Seller Links */}
             {isSeller && (
               <>
                 <li>
@@ -174,7 +168,6 @@ const Navigation = () => {
               </>
             )}
 
-            {/* Admin Links */}
             {isAdmin && (
               <>
                 <li>
@@ -185,7 +178,6 @@ const Navigation = () => {
                     Users
                   </Link>
                 </li>
-
                 <li>
                   <Link
                     to="/admin/allproductslist"
@@ -197,12 +189,11 @@ const Navigation = () => {
               </>
             )}
 
-            {/* Regular User Links */}
             {isUser && (
               <>
                 <li>
                   <Link
-                    to="/order" // Ensure this route exists in your application
+                    to="/order"
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
                     Orders
@@ -219,7 +210,6 @@ const Navigation = () => {
               </>
             )}
 
-            {/* Common Links */}
             <li>
               <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">
                 Profile
@@ -236,13 +226,12 @@ const Navigation = () => {
           </ul>
         )}
 
-        {/* Links for Unauthenticated Users */}
         {!userInfo && (
           <ul>
             <li>
               <Link
                 to="/login"
-                className="flex items-center mt-5 transition-transform transform hover:translate-x-2"
+                className="flex items-center mt-5 transition-all duration-300 transform hover:translate-x-2"
               >
                 <AiOutlineLogin className="mr-2 mt-[4px]" size={26} />
                 <span className="hidden nav-item-name">LOGIN</span>
@@ -251,7 +240,7 @@ const Navigation = () => {
             <li>
               <Link
                 to="/register"
-                className="flex items-center mt-5 transition-transform transform hover:translate-x-2"
+                className="flex items-center mt-5 transition-all duration-300 transform hover:translate-x-2"
               >
                 <AiOutlineUserAdd size={26} />
                 <span className="hidden nav-item-name">REGISTER</span>
