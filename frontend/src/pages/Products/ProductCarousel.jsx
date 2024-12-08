@@ -12,7 +12,7 @@ const ProductCarousel = () => {
   const { data: products, isLoading, error } = useGetTopProductsQuery();
 
   const settings = {
-    dots: false,
+    dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
@@ -21,22 +21,28 @@ const ProductCarousel = () => {
     autoplay: true,
     autoplaySpeed: 3000,
   };
-
+  const limitedProducts = products ? products.slice(0, 3) : [];
   return (
-    <div className="mb-4 w-full max-w-[85%] mx-auto">
+    <div className="mb-4 w-full max-w-[90%] mx-auto">
       {isLoading ? null : error ? (
         <Message variant="danger">
           {error?.data?.message || error.error}
         </Message>
       ) : (
         <Slider {...settings}>
-          {products.map(({ image, _id, name }) => (
-            <div key={_id} className="w-full">
-              <img
-                src={image || PLACEHOLDER_IMAGE} // Fallback to placeholder if image is missing
-                alt={name || "Product Image"}
-                className="w-full h-[15rem] object-cover rounded-lg"
-              />
+          {limitedProducts.map(({ image, _id, name, price }) => (
+            <div key={_id} className="p-4">
+              <div className="relative w-full h-[15rem]">
+                <img
+                  src={image || PLACEHOLDER_IMAGE}
+                  alt={name || "Product Image"}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+                <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white p-4 rounded-lg">
+                  <h2 className="text-lg font-semibold">{name}</h2>
+                  <p className="text-xl font-bold mt-2">${price.toFixed(2)}</p>
+                </div>
+              </div>
             </div>
           ))}
         </Slider>
