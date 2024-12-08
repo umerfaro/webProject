@@ -101,7 +101,12 @@ const AdminDashboard = () => {
 
             <p className="mt-5">Sales</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading || !sales ? <Loader /> : sales.totalSales?.toFixed(2) || "0.00"}
+              ${" "}
+              {isLoading || !sales ? (
+                <Loader />
+              ) : (
+                sales.totalSales?.toFixed(2) || "0.00"
+              )}
             </h1>
           </div>
           <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
@@ -144,4 +149,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

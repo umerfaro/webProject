@@ -9,24 +9,24 @@ import { toast } from "react-toastify";
 import AdminMenu from "./AdminMenu";
 
 const ProductList = () => {
-  const [image, setImage] = useState(""); // Stores the image file
-  const [name, setName] = useState(""); // Stores the product name
-  const [description, setDescription] = useState(""); // Stores the product description
-  const [price, setPrice] = useState(""); // Stores the product price
-  const [category, setCategory] = useState(""); // Stores the product category ID
-  const [quantity, setQuantity] = useState(""); // Stores the quantity available
-  const [brand, setBrand] = useState(""); // Stores the brand name
-  const [stock, setStock] = useState(0); // Stores the stock count
-  const [imageUrl, setImageUrl] = useState(null); // Stores the image preview URL
-  const [discount, setDiscount] = useState(0);
+  const [image, setImage] = useState(""); // Image file state
+  const [name, setName] = useState(""); // Product name
+  const [description, setDescription] = useState(""); // Product description
+  const [price, setPrice] = useState(""); // Product price
+  const [category, setCategory] = useState(""); // Product category ID
+  const [quantity, setQuantity] = useState(""); // Product quantity
+  const [brand, setBrand] = useState(""); // Brand name
+  const [stock, setStock] = useState(0); // Stock count
+  const [imageUrl, setImageUrl] = useState(null); // Image preview URL
+  const [discount, setDiscount] = useState(0); // Discount percentage
 
-  const navigate = useNavigate(); // Hook to navigate to other pages
+  const navigate = useNavigate(); // Hook for navigation
 
-  const [uploadProductImage] = useUploadProductImageMutation(); // Mutation to upload the image
-  const [createProduct] = useCreateProductMutation(); // Mutation to create a product
-  const { data: categories } = useFetchCategoriesQuery(); // Fetching categories for the select input
+  const [uploadProductImage] = useUploadProductImageMutation(); // Upload image mutation
+  const [createProduct] = useCreateProductMutation(); // Create product mutation
+  const { data: categories } = useFetchCategoriesQuery(); // Fetch categories for dropdown
 
-  // Handle the form submission for creating a product
+  // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -37,7 +37,7 @@ const ProductList = () => {
     }
 
     try {
-      // Prepare product data to send to the backend
+      // Prepare product data
       const productData = new FormData();
       productData.append("image", image);
       productData.append("name", name);
@@ -49,7 +49,7 @@ const ProductList = () => {
       productData.append("countInStock", stock);
       productData.append("discount", discount);
 
-      // Call the mutation to create the product
+      // Call mutation to create product
       const { data } = await createProduct(productData);
 
       if (data.error) {
@@ -57,7 +57,7 @@ const ProductList = () => {
       } else {
         toast.success(`${data.name} has been created!`);
 
-        // Reset form fields after successful product creation
+        // Reset form fields
         setName("");
         setDescription("");
         setPrice("");
@@ -66,10 +66,10 @@ const ProductList = () => {
         setBrand("");
         setStock(0);
         setDiscount(0);
-        setImage(""); // Clear the image file state
-        setImageUrl(null); // Clear the image URL preview
+        setImage("");
+        setImageUrl(null); // Clear image preview
 
-        // Optionally, navigate to a different page after successful creation
+        // Navigate to a different page after successful creation (optional)
         // navigate("/shop"); // Uncomment if you want to navigate to the shop page
       }
     } catch (error) {
@@ -78,7 +78,7 @@ const ProductList = () => {
     }
   };
 
-  // Handle the file upload for the product image
+  // Handle image upload
   const uploadFileHandler = async (e) => {
     const formData = new FormData();
     formData.append("image", e.target.files[0]);
@@ -86,8 +86,8 @@ const ProductList = () => {
     try {
       const res = await uploadProductImage(formData).unwrap();
       toast.success("Image uploaded successfully.");
-      setImage(res.image); // Set the uploaded image
-      setImageUrl(res.image); // Preview the image
+      setImage(res.image);
+      setImageUrl(res.image); // Show image preview
     } catch (error) {
       toast.error(error?.data?.message || "Error uploading image.");
     }
@@ -98,26 +98,26 @@ const ProductList = () => {
       <div className="flex flex-col md:flex-row">
         <AdminMenu /> {/* Admin side menu */}
         <div className="md:w-3/4 p-6">
-          <div className="text-2xl font-bold mb-4">Create Product</div>
+          <div className="text-2xl font-bold mb-6">Create New Product</div>
 
           {imageUrl && (
-            <div className="text-center mb-5">
+            <div className="text-center mb-6">
               <img
-                src={imageUrl} // Preview the uploaded image
+                src={imageUrl} // Product image preview
                 alt="Product preview"
-                className="block mx-auto max-h-[200px] object-contain"
+                className="block mx-auto max-h-[200px] object-contain rounded-lg shadow-lg"
               />
             </div>
           )}
 
-          {/* Product form */}
-          <form onSubmit={handleSubmit}>
+          {/* Product creation form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image upload */}
             <div className="mb-4">
               <label className="block font-semibold mb-2" htmlFor="image">
                 Product Image
               </label>
-              <label className="block cursor-pointer text-white bg-gray-800 p-4 rounded-lg text-center font-bold mb-4">
+              <label className="block cursor-pointer bg-gray-800 text-white py-3 px-6 rounded-lg text-center font-semibold">
                 {image ? image.name : "Click to Upload Image"}
                 <input
                   type="file"
@@ -130,7 +130,7 @@ const ProductList = () => {
             </div>
 
             {/* Product details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block font-semibold mb-2" htmlFor="name">
                   Product Name
@@ -138,7 +138,7 @@ const ProductList = () => {
                 <input
                   type="text"
                   id="name"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter product name"
@@ -153,7 +153,7 @@ const ProductList = () => {
                 <input
                   type="number"
                   id="price"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="Enter product price"
@@ -162,7 +162,7 @@ const ProductList = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block font-semibold mb-2" htmlFor="quantity">
                   Quantity
@@ -170,7 +170,7 @@ const ProductList = () => {
                 <input
                   type="number"
                   id="quantity"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   placeholder="Enter product quantity"
@@ -179,13 +179,13 @@ const ProductList = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-2" htmlFor="brand">
+                <label className="block font-semibold mb-2" htmlFor="discount">
                   Discount (%)
                 </label>
                 <input
                   type="number"
                   id="discount"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={discount}
                   onChange={(e) => setDiscount(e.target.value)}
                   placeholder="Enter discount (0-100)"
@@ -201,7 +201,7 @@ const ProductList = () => {
                 <input
                   type="text"
                   id="brand"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="Enter product brand"
@@ -215,14 +215,14 @@ const ProductList = () => {
               </label>
               <textarea
                 id="description"
-                className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Enter product description"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block font-semibold mb-2" htmlFor="stock">
                   Stock Count
@@ -230,7 +230,7 @@ const ProductList = () => {
                 <input
                   type="number"
                   id="stock"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
                   placeholder="Enter stock count"
@@ -244,7 +244,7 @@ const ProductList = () => {
                 </label>
                 <select
                   id="category"
-                  className="p-4 mb-3 w-full border rounded-lg bg-[#101011] text-white"
+                  className="w-full p-4 border rounded-lg bg-[#101011] text-white"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   required
@@ -261,7 +261,10 @@ const ProductList = () => {
 
             <button
               type="submit"
-              className="w-full py-4 mt-5 rounded-lg text-lg font-bold bg-pink-600 text-white"
+              className={`w-full py-4 mt-6 rounded-lg text-lg font-bold ${
+                image ? "bg-pink-600" : "bg-gray-600 cursor-not-allowed"
+              } text-white`}
+              disabled={!image}
             >
               {image ? "Create Product" : "Please upload an image first"}
             </button>
