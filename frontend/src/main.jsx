@@ -36,12 +36,14 @@ import OrderList from "./pages/Admin_Seller/SellerOrderList.jsx";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import AdminDashboard from "./pages/Admin_Seller/SellerDashboard.jsx";
 import OrderHistoryPage from "./pages/Orders/OrderHistoryPage.jsx";
+import HelpAndSupport from "./pages/Helppage/HelpSupport.jsx";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 // Use environment variables for the Client ID
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "841516082448-05td3fv0mi3suia6dvsiqvp2sp5i6qla.apps.googleusercontent.com"; // Ensure this is the correct Client ID
-
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  "841516082448-05td3fv0mi3suia6dvsiqvp2sp5i6qla.apps.googleusercontent.com"; // Ensure this is the correct Client ID
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -61,6 +63,7 @@ const router = createBrowserRouter(
         <Route path="/placeorder" element={<PlaceOrder />} />
         <Route path="/order/:id" element={<Order />} />
         <Route path="/order" element={<OrderHistoryPage />} />
+        <Route path="/help" element={<HelpAndSupport />} />
       </Route>
 
       <Route path="/admin" element={<AdminRoute />}>
@@ -79,10 +82,10 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-    <PayPalScriptProvider>
-      <RouterProvider router={router} />
-    </PayPalScriptProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <PayPalScriptProvider>
+        <RouterProvider router={router} />
+      </PayPalScriptProvider>
     </GoogleOAuthProvider>
   </Provider>
 );
