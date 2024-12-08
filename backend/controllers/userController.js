@@ -1,4 +1,3 @@
-// controllers/userController.js
 import User from "../models/userModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 import bcrypt from "bcryptjs";
@@ -7,55 +6,37 @@ import { OAuth2Client } from "google-auth-library";
 
 const client = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
 
-/**
- * @desc    Create a new user
- * @route   POST /api/users
- * @access  Public
- */
+// Create a new user
 const createUser = asyncHandler(async (req, res) => {
-  const { username, email, password, role } = req.body; // Now expect role in the request body
-
+  const { username, email, password, role } = req.body;
   if (!username || !email || !password) {
     res.status(400);
     throw new Error("Please fill all the inputs.");
   }
-
-  // Check if the user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(400);
     throw new Error("User already exists");
   }
-
-  // Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Set the user's role
-  const isSeller = role === "seller"; // If role is 'seller', set isSeller to true
-
-  // Create the new user
+  const isSeller = role === "seller";
   const newUser = new User({
     username,
     email,
     password: hashedPassword,
-    isSeller, // Set isSeller field based on the role
+    isSeller,
   });
 
   try {
-    // Save user to database
     await newUser.save();
-
-    // Create JWT token
     createToken(res, newUser._id);
-
-    // Send response
     res.status(201).json({
       _id: newUser._id,
       username: newUser.username,
       email: newUser.email,
       isAdmin: newUser.isAdmin,
-      isSeller: newUser.isSeller, // Return isSeller in the response
+      isSeller: newUser.isSeller,
     });
   } catch (error) {
     res.status(400);
@@ -63,25 +44,19 @@ const createUser = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Authenticate user & get token
- * @route   POST /api/users/auth
- * @access  Public
- */
+// Login user
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
   console.log(email);
   console.log(password);
-
   const existingUser = await User.findOne({ email });
-
   if (existingUser) {
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
     if (isPasswordValid) {
       createToken(res, existingUser._id);
-
       res.status(200).json({
         _id: existingUser._id,
         username: existingUser.username,
@@ -93,16 +68,11 @@ const loginUser = asyncHandler(async (req, res) => {
       return;
     }
   }
-
   res.status(401);
   throw new Error("Invalid email or password");
 });
 
-/**
- * @desc    Logout user
- * @route   POST /api/users/logout
- * @access  Public
- */
+// Logout current user
 const logoutCurrentUser = asyncHandler(async (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
@@ -114,24 +84,15 @@ const logoutCurrentUser = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 });
 
-/**
- * @desc    Get all users (Admin)
- * @route   GET /api/users
- * @access  Private/Admin
- */
+// Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find({});
   res.json(users);
 });
 
-/**
- * @desc    Get current user profile
- * @route   GET /api/users/profile
- * @access  Private
- */
+// Get current user profile
 const getCurrentUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-
   if (user) {
     res.json({
       _id: user._id,
@@ -147,26 +108,18 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Update current user profile
- * @route   PUT /api/users/profile
- * @access  Private
- */
+// Update current user profile
 const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-
   if (user) {
     user.username = req.body.username || user.username;
     user.email = req.body.email || user.email;
-
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(req.body.password, salt);
       user.password = hashedPassword;
     }
-
     const updatedUser = await user.save();
-
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
@@ -181,20 +134,14 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Delete user by ID (Admin)
- * @route   DELETE /api/users/:id
- * @access  Private/Admin
- */
+// Delete current user profile
 const deleteUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
-
   if (user) {
     if (user.isAdmin) {
       res.status(400);
       throw new Error("Cannot delete admin user");
     }
-
     await User.deleteOne({ _id: user._id });
     res.json({ message: "User removed" });
   } else {
@@ -203,14 +150,8 @@ const deleteUserById = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Get user by ID (Admin)
- * @route   GET /api/users/:id
- * @access  Private/Admin
- */
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
-
   if (user) {
     res.json(user);
   } else {
@@ -219,22 +160,14 @@ const getUserById = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Update user by ID (Admin)
- * @route   PUT /api/users/:id
- * @access  Private/Admin
- */
 const updateUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
-
   if (user) {
     user.username = req.body.username || user.username;
     user.email = req.body.email || user.email;
     user.isAdmin = Boolean(req.body.isAdmin);
     user.isSeller = Boolean(req.body.isSeller);
-
     const updatedUser = await user.save();
-
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
@@ -249,62 +182,43 @@ const updateUserById = asyncHandler(async (req, res) => {
   }
 });
 
-/**
- * @desc    Handle Google Login
- * @route   POST /api/users/auth/google
- * @access  Public
- */
 const googleLogin = asyncHandler(async (req, res) => {
   const { token } = req.body;
-
   if (!token) {
     res.status(400);
     throw new Error("Google ID token is required");
   }
-
   try {
-    // Verify the token
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID, // Specify the CLIENT_ID of the app that accesses the backend
     });
-
     const payload = ticket.getPayload();
-
-    // Extract user information
     const { sub: googleId, email, name, picture } = payload;
-
     if (!email) {
       res.status(400);
       throw new Error("Google account does not have an email associated");
     }
-
-    // Check if the user already exists
     let user = await User.findOne({ email });
 
     if (user) {
-      // If user exists but doesn't have googleId, link it
       if (!user.googleId) {
         user.googleId = googleId;
         await user.save();
       }
     } else {
-      // If user doesn't exist, create a new user
       user = new User({
         username: name,
         email,
         googleId,
         avatar: picture,
-        // Optionally, set isSeller based on your business logic
       });
 
       await user.save();
     }
 
-    // Generate JWT token
     createToken(res, user._id);
 
-    // Respond with user data
     res.status(200).json({
       _id: user._id,
       username: user.username,
@@ -319,6 +233,7 @@ const googleLogin = asyncHandler(async (req, res) => {
   }
 });
 
+// Export the controllers
 export {
   createUser,
   loginUser,
@@ -329,5 +244,5 @@ export {
   deleteUserById,
   getUserById,
   updateUserById,
-  googleLogin, // Export the new controller
+  googleLogin,
 };

@@ -23,16 +23,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Routes for users
 app.use("/api/users", userRoutes);
+
+// Routes for categories
 app.use("/api/category", categoryRoutes);
+
+// Routes for products
 app.use("/api/products", productRoutes);
+
+// Routes for uploads
 app.use("/api/upload", uploadRoutes);
+
+// Routes for orders
 app.use("/api/orders", orderRoutes);
 
+// Routes for paypal config
 app.get("/api/config/paypal", (req, res) => {
   res.send({ clientId: process.env.PAYPAL_CLIENT_ID });
 });
 
+// Serve static assets in production
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname + "/uploads")));
 

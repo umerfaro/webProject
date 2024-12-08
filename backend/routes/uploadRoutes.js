@@ -4,24 +4,23 @@ import multer from "multer";
 
 const router = express.Router();
 
+// Multer configuration for uploading images.
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
   },
-
   filename: (req, file, cb) => {
     const extname = path.extname(file.originalname);
     cb(null, `${file.fieldname}-${Date.now()}${extname}`);
   },
 });
 
+// File filter to ensure only images are uploaded.
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpe?g|png|webp/;
   const mimetypes = /image\/jpe?g|image\/png|image\/webp/;
-
   const extname = path.extname(file.originalname).toLowerCase();
   const mimetype = file.mimetype;
-
   if (filetypes.test(extname) && mimetypes.test(mimetype)) {
     cb(null, true);
   } else {
@@ -29,9 +28,13 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// Upload single image to the server using Multer.
 const upload = multer({ storage, fileFilter });
+
+// Route to upload an image.
 const uploadSingleImage = upload.single("image");
 
+// Upload image route.
 router.post("/", (req, res) => {
   uploadSingleImage(req, res, (err) => {
     if (err) {

@@ -1,11 +1,11 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Product from "../models/productModel.js";
 
+// Add a new product to the database
 const addProduct = asyncHandler(async (req, res) => {
   try {
-    const { name, description, price, category, quantity, brand ,  discount } = req.fields;
-
-    // Validation
+    const { name, description, price, category, quantity, brand, discount } =
+      req.fields;
     switch (true) {
       case !name:
         return res.json({ error: "Name is required" });
@@ -20,18 +20,14 @@ const addProduct = asyncHandler(async (req, res) => {
       case !quantity:
         return res.json({ error: "Quantity is required" });
     }
-
-    // Set the uploader's ID from the authenticated user
+    if (!name || !brand || !description || !price || !category || !quantity) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
     const uploadedBy = req.user._id;
-    // Optionally, set the uploader's name
-    // const uploadedByName = req.user.username; // Ensure your User model has a 'username' field
-
     const product = new Product({
       ...req.fields,
       uploadedBy,
-      // uploadedByName, // Uncomment if using the uploadedByName field
     });
-
     await product.save();
     res.json(product);
   } catch (error) {
@@ -40,12 +36,10 @@ const addProduct = asyncHandler(async (req, res) => {
   }
 });
 
-
+// Fetch all products from the database
 const updateProductDetails = asyncHandler(async (req, res) => {
   try {
     const { name, description, price, category, quantity, brand } = req.fields;
-
-    // Validation
     switch (true) {
       case !name:
         return res.json({ error: "Name is required" });
@@ -60,27 +54,17 @@ const updateProductDetails = asyncHandler(async (req, res) => {
       case !quantity:
         return res.json({ error: "Quantity is required" });
     }
-
     const product = await Product.findById(req.params.id);
-
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
-
-    // Update product fields
     product.name = name;
     product.description = description;
     product.price = price;
     product.category = category;
     product.quantity = quantity;
     product.brand = brand;
-
-    // Optionally, track who updated the product
-    // product.updatedBy = req.user._id;
-    // product.updatedByName = req.user.username;
-
     await product.save();
-
     res.json(product);
   } catch (error) {
     console.error(error);
@@ -88,7 +72,7 @@ const updateProductDetails = asyncHandler(async (req, res) => {
   }
 });
 
-
+// Remove product
 const removeProduct = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
@@ -99,10 +83,10 @@ const removeProduct = asyncHandler(async (req, res) => {
   }
 });
 
+// Fetch all products from the database
 const fetchProducts = asyncHandler(async (req, res) => {
   try {
     const pageSize = 6;
-
     const keyword = req.query.keyword
       ? {
           name: {
@@ -111,13 +95,11 @@ const fetchProducts = asyncHandler(async (req, res) => {
           },
         }
       : {};
-
     const count = await Product.countDocuments({ ...keyword });
     const products = await Product.find({ ...keyword })
       .populate("category")
       .populate("uploadedBy", "username") // Populate uploader's username
       .limit(pageSize);
-
     res.json({
       products,
       page: 1,
@@ -130,7 +112,7 @@ const fetchProducts = asyncHandler(async (req, res) => {
   }
 });
 
-
+// Fetch product by id
 const fetchProductById = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -146,6 +128,7 @@ const fetchProductById = asyncHandler(async (req, res) => {
   }
 });
 
+// Fetch all products
 const fetchAllProducts = asyncHandler(async (req, res) => {
   try {
     const products = await Product.find({})
@@ -160,6 +143,7 @@ const fetchAllProducts = asyncHandler(async (req, res) => {
   }
 });
 
+// Add a review
 const addProductReview = asyncHandler(async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -202,6 +186,7 @@ const addProductReview = asyncHandler(async (req, res) => {
   }
 });
 
+// Fetch top products
 const fetchTopProducts = asyncHandler(async (req, res) => {
   try {
     const products = await Product.find({}).sort({ rating: -1 }).limit(4);
@@ -212,6 +197,7 @@ const fetchTopProducts = asyncHandler(async (req, res) => {
   }
 });
 
+// Fetch new products
 const fetchNewProducts = asyncHandler(async (req, res) => {
   try {
     const products = await Product.find().sort({ _id: -1 }).limit(5);
@@ -225,11 +211,9 @@ const fetchNewProducts = asyncHandler(async (req, res) => {
 const filterProducts = asyncHandler(async (req, res) => {
   try {
     const { checked, radio } = req.body;
-
     let args = {};
     if (checked.length > 0) args.category = checked;
     if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
-
     const products = await Product.find(args);
     res.json(products);
   } catch (error) {
@@ -238,6 +222,7 @@ const filterProducts = asyncHandler(async (req, res) => {
   }
 });
 
+// Export all functions
 export {
   addProduct,
   updateProductDetails,
