@@ -14,7 +14,7 @@ const PlaceOrder = () => {
   const cart = useSelector((state) => state.cart);
   let totDiscounted = 0;
   for (let item of cart.cartItems) {
-    totDiscounted += (item.price - (item.price * item.discount) / 100);
+    totDiscounted += item.price - (item.price * item.discount) / 100;
   }
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
   useEffect(() => {
@@ -22,11 +22,13 @@ const PlaceOrder = () => {
       navigate("/shipping");
     }
   }, [cart.paymentMethod, cart.shippingAddress.address, navigate]);
-  const totPrice = parseFloat((
-    (parseFloat(totDiscounted) || 0) +
-    (parseFloat(cart.shippingPrice) || 0) +
-    (parseFloat(cart.taxPrice) || 0)
-  ).toFixed(2));
+  const totPrice = parseFloat(
+    (
+      (parseFloat(totDiscounted) || 0) +
+      (parseFloat(cart.shippingPrice) || 0) +
+      (parseFloat(cart.taxPrice) || 0)
+    ).toFixed(2)
+  );
   const dispatch = useDispatch();
 
   const placeOrderHandler = async () => {
@@ -70,7 +72,6 @@ const PlaceOrder = () => {
 
               <tbody>
                 {cart.cartItems.map((item, index) => (
-                  
                   <tr key={index}>
                     <td className="p-2">
                       <img
@@ -84,9 +85,15 @@ const PlaceOrder = () => {
                       <Link to={`/product/${item.product}`}>{item.name}</Link>
                     </td>
                     <td className="p-2">{item.qty}</td>
-                    <td className="p-2">{item.price - (item.price * item.discount) / 100}</td>
                     <td className="p-2">
-                      $ {(item.qty * (item.price - (item.price * item.discount) / 100)).toFixed(2)}
+                      {item.price - (item.price * item.discount) / 100}
+                    </td>
+                    <td className="p-2">
+                      ${" "}
+                      {(
+                        item.qty *
+                        (item.price - (item.price * item.discount) / 100)
+                      ).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -106,19 +113,15 @@ const PlaceOrder = () => {
               <br></br>
               <div>
                 <h2 className="text-2xl font-semibold mb-4">Shipping</h2>
-                  <p>
-                    <strong>Address:</strong> {cart.shippingAddress.address},{" "}
-                    {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{" "}
-                    {cart.shippingAddress.country}
-                  </p>
-                </div>
+                <p>
+                  <strong>Address:</strong> {cart.shippingAddress.address},{" "}
+                  {cart.shippingAddress.city} {cart.shippingAddress.postalCode},{" "}
+                  {cart.shippingAddress.country}
+                </p>
+              </div>
             </ul>
 
             {error && <Message variant="danger">{error.data.message}</Message>}
-
-            
-
-           
           </div>
 
           <button

@@ -38,63 +38,85 @@ const Shipping = () => {
   }, [navigate, shippingAddress]);
 
   return (
-    <div className="container mx-auto mt-10">
-      <ProgressSteps step1 step2 />
-      <div className="mt-[10rem] flex justify-around items-center flex-wrap">
-        <form onSubmit={submitHandler} className="w-[40rem]">
-          <h1 className="text-2xl font-semibold mb-4">Shipping</h1>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Address</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter address"
-              value={address}
-              required
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">City</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter city"
-              value={city}
-              required
-              onChange={(e) => setCity(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Postal Code</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter postal code"
-              value={postalCode}
-              required
-              onChange={(e) => setPostalCode(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Country</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              placeholder="Enter country"
-              value={country}
-              required
-              onChange={(e) => setCountry(e.target.value)}
-            />
-          </div>
-
-          <button
-            className="bg-pink-500 text-white py-2 px-4 rounded-full text-lg w-full"
-            type="submit"
+    <div className="bg-black min-h-screen py-10">
+      <div className="container mx-auto mt-10">
+        <ProgressSteps step1 step2 />
+        <div className="mt-12 flex justify-center items-center flex-wrap">
+          <form
+            onSubmit={submitHandler}
+            className="bg-white p-8 rounded-lg shadow-lg w-full max-w-[450px]"
           >
-            Continue
-          </button>
-        </form>
+            <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">
+              Shipping Address
+            </h1>
+
+            {/* Address Field */}
+            <div className="mb-5">
+              <label className="block text-gray-600 text-sm mb-2">
+                Address
+              </label>
+              <input
+                type="text"
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Enter your address"
+                value={address}
+                required
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+
+            {/* City Field */}
+            <div className="mb-5">
+              <label className="block text-gray-600 text-sm mb-2">City</label>
+              <input
+                type="text"
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Enter city"
+                value={city}
+                required
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </div>
+
+            {/* Postal Code Field */}
+            <div className="mb-5">
+              <label className="block text-gray-600 text-sm mb-2">
+                Postal Code
+              </label>
+              <input
+                type="text"
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Enter postal code"
+                value={postalCode}
+                required
+                onChange={(e) => setPostalCode(e.target.value)}
+              />
+            </div>
+
+            {/* Country Field */}
+            <div className="mb-5">
+              <label className="block text-gray-600 text-sm mb-2">
+                Country
+              </label>
+              <input
+                type="text"
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                placeholder="Enter country"
+                value={country}
+                required
+                onChange={(e) => setCountry(e.target.value)}
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              className="bg-pink-500 text-white py-3 px-6 rounded-full w-full text-lg font-semibold hover:bg-pink-600 transition duration-300"
+              type="submit"
+            >
+              Continue
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
